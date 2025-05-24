@@ -1,49 +1,79 @@
 .planner-panel {
   position: absolute;
-  top: 32px;
-  left: 32px;
-  background-color: white;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 300px;
+  top: 2rem;
+  left: 2rem;
+  width: 320px;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Inter', sans-serif;
   z-index: 1000;
 
-  h2 {
-    margin-top: 0;
-    font-size: 20px;
-    margin-bottom: 12px;
+  .panel-header {
+    margin-bottom: 1rem;
+
+    h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
   }
 
-  .form-group {
-    margin-bottom: 12px;
+  .panel-section {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
 
     label {
-      display: block;
-      margin-bottom: 4px;
-      font-weight: 500;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
     }
 
     input {
-      width: 100%;
-      padding: 8px;
+      padding: 0.5rem;
       border: 1px solid #ccc;
       border-radius: 8px;
+      font-size: 0.95rem;
     }
   }
 
-  button {
-    width: 100%;
-    padding: 10px;
-    background-color: #1976d2;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
+  .input-with-label-inside {
+    position: relative;
 
-    &:hover {
-      background-color: #1565c0;
+    .input-label-inside {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+      font-size: 0.95rem;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    input {
+      padding-left: 3em;
+    }
+  }
+
+  .panel-actions {
+    display: flex;
+    justify-content: flex-end;
+
+    .btn-primary {
+      background-color: #005eff;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: #0045c7;
+      }
     }
   }
 }

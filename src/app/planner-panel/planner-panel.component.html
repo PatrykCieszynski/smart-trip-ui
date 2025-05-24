@@ -1,14 +1,38 @@
+<leaflet-map #leafletMap></leaflet-map>
+
 <div class="planner-panel">
-  <h2>Zaplanuj podróż</h2>
-  <div class="form-group">
-    <label for="from">Z:</label>
-    <input id="from" type="text" placeholder="Punkt początkowy" />
+  <div class="panel-header">
+    <h2>Zaplanuj podróż</h2>
   </div>
 
-  <div class="form-group">
-    <label for="to">Do:</label>
-    <input id="to" type="text" placeholder="Cel podróży" />
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Z:</mat-label>
+    <input matInput [formControl]="fromControl" [matAutocomplete]="autoFrom" placeholder="Wpisz miejsce początkowe" autocomplete="off"/>
+    <mat-autocomplete #autoFrom="matAutocomplete"  (optionSelected)="onFromSelected($event)" >
+      <mat-option *ngFor="let city of filteredFromCities$ | async" [value]="city">
+        {{ city }}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-100">
+    <mat-label>Do:</mat-label>
+    <input matInput [formControl]="toControl" [matAutocomplete]="autoTo" placeholder="Wpisz miejsce docelowe" autocomplete="off"/>
+    <mat-autocomplete #autoTo="matAutocomplete"  (optionSelected)="onToSelected($event)" >
+      <mat-option *ngFor="let city of filteredToCities$ | async" [value]="city">
+        {{ city }}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+
+  <div class="panel-section">
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Kiedy:</mat-label>
+      <input matInput type="datetime-local" id="when" />
+    </mat-form-field>
   </div>
 
-  <button>Znajdź trasę</button>
+  <div class="panel-actions">
+    <button mat-raised-button color="primary" (click)="findRoute()" >Znajdź trasę</button>
+  </div>
 </div>
