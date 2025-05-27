@@ -33,15 +33,15 @@ export class PlannerPanelComponent implements OnInit {
   toControl = new FormControl<string>('', { nonNullable: true });
   filteredFromCities$!: Observable<string[]>;
   filteredToCities$!: Observable<string[]>;
-  allFromCities: MapTilerCity[] = [];
-  allToCities: MapTilerCity[] = [];
+  citiesToSelect: MapTilerCity[] = [];
+
   routePoints = new RoutePoints();
 
   constructor(private apiGatewayService: ApiGatewayService) {}
 
   ngOnInit(): void {
-    this.filteredFromCities$ = this.createCityFilter(this.fromControl, this.allFromCities);
-    this.filteredToCities$ = this.createCityFilter(this.toControl, this.allToCities);
+    this.filteredFromCities$ = this.createCityFilter(this.fromControl, this.citiesToSelect);
+    this.filteredToCities$ = this.createCityFilter(this.toControl, this.citiesToSelect);
   }
 
   private createCityFilter(control: FormControl<string>, citiesRef: MapTilerCity[]): Observable<string[]> {
@@ -55,8 +55,7 @@ export class PlannerPanelComponent implements OnInit {
   }
 
   onCitySelected(event: MatAutocompleteSelectedEvent, isFrom: boolean) {
-    const cities = isFrom ? this.allFromCities : this.allToCities;
-    const city = cities.find(c => c.place_name === event.option.value);
+    const city = this.citiesToSelect.find(c => c.place_name === event.option.value);
     if (city) {
       const point = { lat: city.geometry.coordinates[1], lng: city.geometry.coordinates[0], pointName: city.place_name };
       isFrom ? this.routePoints.setStart(point) : this.routePoints.setEnd(point);
@@ -67,7 +66,7 @@ export class PlannerPanelComponent implements OnInit {
   }
 
   onLocationPicked(event: { lat: number, lng: number }, isFrom: boolean) {
-    //
+    // Update the form control with the selected coordinates (or even some vague location name)
     const point = { lat: event.lat, lng: event.lng };
     isFrom ? this.routePoints.setStart(point) : this.routePoints.setEnd(point);
   }
