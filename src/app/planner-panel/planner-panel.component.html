@@ -1,4 +1,7 @@
-<leaflet-map #leafletMap></leaflet-map>
+<leaflet-map #leafletMap
+             (fromSelected)="onLocationPicked($event, true)"
+             (toSelected)="onLocationPicked($event, false)">
+</leaflet-map>
 
 <div class="planner-panel">
   <div class="panel-header">
@@ -8,7 +11,7 @@
   <mat-form-field appearance="outline" class="w-100">
     <mat-label>Z:</mat-label>
     <input matInput [formControl]="fromControl" [matAutocomplete]="autoFrom" placeholder="Wpisz miejsce początkowe" autocomplete="off"/>
-    <mat-autocomplete #autoFrom="matAutocomplete"  (optionSelected)="onFromSelected($event)" >
+    <mat-autocomplete #autoFrom="matAutocomplete"  (optionSelected)="onCitySelected($event, true)" >
       <mat-option *ngFor="let city of filteredFromCities$ | async" [value]="city">
         {{ city }}
       </mat-option>
@@ -18,7 +21,7 @@
   <mat-form-field appearance="outline" class="w-100">
     <mat-label>Do:</mat-label>
     <input matInput [formControl]="toControl" [matAutocomplete]="autoTo" placeholder="Wpisz miejsce docelowe" autocomplete="off"/>
-    <mat-autocomplete #autoTo="matAutocomplete"  (optionSelected)="onToSelected($event)" >
+    <mat-autocomplete #autoTo="matAutocomplete"  (optionSelected)="onCitySelected($event, false)" >
       <mat-option *ngFor="let city of filteredToCities$ | async" [value]="city">
         {{ city }}
       </mat-option>

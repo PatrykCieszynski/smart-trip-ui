@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import {Observable, of, tap} from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import {RoutePoints} from '../models/RoutePoints';
 
 export interface MapTilerCity {
   place_name: string;
@@ -42,14 +43,19 @@ export class ApiGatewayService {
     );
   }
 
-  getRoute(from: MapTilerCity, to: MapTilerCity): Observable<any> {
-    const fromLng = from.geometry.coordinates[0];
-    const fromLat = from.geometry.coordinates[1];
-    const toLng = to.geometry.coordinates[0];
-    const toLat = to.geometry.coordinates[1];
-    const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${environment.openRouteServiceApiKey}&start=${fromLng},${fromLat}&end=${toLng},${toLat}`;
-    return this.http.get<any>(url).pipe(
-      tap(route => console.log('Route:', route))
+  getRoute(routePoints: RoutePoints): Observable<any> {
+    const url = 'https://api.openrouteservice.org/v2/directions/driving-car/geojson';
+    const body = {
+      coordinates: routePoints.getAllCoordinates()
+    };
+    console.log(body);
+    const headers = {
+      'Authorization': environment.openRouteServiceApiKey,
+      'Content-Type': 'application/json'
+    };
+
+    return this.http.post<any>(url, body, { headers }).pipe(
+      tap(route => console.log('Route:', route)),
     );
   }
 }

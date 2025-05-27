@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, EventEmitter, Output} from '@angular/core';
 import {control, latLng, MapOptions, tileLayer} from 'leaflet';
 import {environment} from '../../environments/environment';
 import {LeafletModule} from '@bluehalo/ngx-leaflet';
@@ -11,7 +11,12 @@ import * as L from 'leaflet';
   styleUrl: './leaflet-map.component.scss'
 })
 export class LeafletMapComponent {
+  @Output() fromSelected = new EventEmitter<{ lat: number, lng: number }>();
+  @Output() toSelected = new EventEmitter<{ lat: number, lng: number }>();
+
   map: L.Map | undefined;
+  fromMarker: L.Marker | undefined;
+  toMarker: L.Marker | undefined;
 
   options: MapOptions = {
     layers: [
@@ -29,18 +34,57 @@ export class LeafletMapComponent {
   onMapReady(map: L.Map) {
     this.map = map;
     control.zoom({ position: 'bottomright' }).addTo(map);
+
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      const { lat, lng } = e.latlng;
+      const popupContent = `
+      <div>
+        <button id="set-from-btn" type="button">Ustaw punkt startowy</button><br/>
+        <button id="set-to-btn" type="button">Ustaw punkt końcowy</button>
+      </div>
+    `;
+      L.popup()
+        .setLatLng([lat, lng])
+        .setContent(popupContent)
+        .openOn(map);
+
+      setTimeout(() => {
+        const fromBtn = document.getElementById('set-from-btn');
+        const toBtn = document.getElementById('set-to-btn');
+        if (fromBtn) {
+          fromBtn.onclick = () => {
+            this.addFromMarker(lat, lng);
+            map.closePopup();
+            this.fromSelected.emit({ lat, lng });
+          };
+        }
+        if (toBtn) {
+          toBtn.onclick = () => {
+            this.addToMarker(lat, lng);
+            map.closePopup();
+            this.toSelected.emit({ lat, lng });
+          };
+        }
+      }, 0);
+    });
   }
 
   addFromMarker(lat: number, lng: number) {
-    console.log(`Adding marker at lat: ${lat}, lng: ${lng}`);
-    const marker = L.marker([lat, lng]).addTo((this.map as any));
-    marker.bindPopup('From Location').openPopup();
+    if (this.fromMarker) {
+      this.map?.removeLayer(this.fromMarker);
+    }
+
+    this.fromMarker = L.marker([lat, lng]).addTo((this.map as any));
+    this.fromMarker.bindPopup('From Location').openPopup();
   }
 
   addToMarker(lat: number, lng: number) {
-    console.log(`Adding marker at lat: ${lat}, lng: ${lng}`);
-    const marker = L.marker([lat, lng]).addTo((this.map as any));
-    marker.bindPopup('To Location').openPopup();
+    if (this.toMarker) {
+      this.map?.removeLayer(this.toMarker);
+    }
+
+    this.toMarker = L.marker([lat, lng]).addTo((this.map as any));
+    this.toMarker.bindPopup('To Location').openPopup();
   }
 
   drawRoute(route: any) {
