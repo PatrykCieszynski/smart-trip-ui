@@ -1,6 +1,9 @@
 <leaflet-map #leafletMap
              (fromSelected)="onLocationPicked($event, true)"
-             (toSelected)="onLocationPicked($event, false)">
+             (toSelected)="onLocationPicked($event, false)"
+             (fromMoved)="onLocationPicked($event, true)"
+              (toMoved)="onLocationPicked($event, false)"
+>
 </leaflet-map>
 
 <div class="planner-panel">

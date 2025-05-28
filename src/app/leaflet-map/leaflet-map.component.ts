@@ -14,6 +14,9 @@ export class LeafletMapComponent {
   @Output() fromSelected = new EventEmitter<{ lat: number, lng: number }>();
   @Output() toSelected = new EventEmitter<{ lat: number, lng: number }>();
 
+  @Output() fromMoved = new EventEmitter<{ lat: number, lng: number }>();
+  @Output() toMoved = new EventEmitter<{ lat: number, lng: number }>();
+
   map: L.Map | undefined;
   fromMarker: L.Marker | undefined;
   toMarker: L.Marker | undefined;
@@ -30,6 +33,7 @@ export class LeafletMapComponent {
     center: latLng(52.2297, 21.0122), // Warszawa
     zoomControl: false
   };
+
 
   onMapReady(map: L.Map) {
     this.map = map;
@@ -69,23 +73,34 @@ export class LeafletMapComponent {
     });
   }
 
+
   addFromMarker(lat: number, lng: number) {
     if (this.fromMarker) {
       this.map?.removeLayer(this.fromMarker);
     }
 
-    this.fromMarker = L.marker([lat, lng]).addTo((this.map as any));
+    this.fromMarker = L.marker([lat, lng], {draggable: true}).addTo((this.map as any));
     this.fromMarker.bindPopup('From Location').openPopup();
+    this.fromMarker.on('dragend', (event: L.DragEndEvent) => {
+      const { lat, lng } = event.target.getLatLng();
+      this.fromMoved.emit({ lat, lng });
+    });
   }
+
 
   addToMarker(lat: number, lng: number) {
     if (this.toMarker) {
       this.map?.removeLayer(this.toMarker);
     }
 
-    this.toMarker = L.marker([lat, lng]).addTo((this.map as any));
+    this.toMarker = L.marker([lat, lng], {draggable: true}).addTo((this.map as any));
     this.toMarker.bindPopup('To Location').openPopup();
+    this.toMarker.on('dragend', (event: L.DragEndEvent) => {
+      const { lat, lng } = event.target.getLatLng();
+      this.toMoved.emit({ lat, lng });
+    })
   }
+
 
   drawRoute(route: any) {
     if (!route || !route.features || !route.features[0]?.geometry?.coordinates) {
