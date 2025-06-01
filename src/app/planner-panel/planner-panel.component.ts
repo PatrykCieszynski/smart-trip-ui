@@ -1,5 +1,5 @@
 import {Component, OnInit, ViewChild} from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import {FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { debounceTime, switchMap, startWith, map } from 'rxjs/operators';
 import {Observable, tap} from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,6 +17,7 @@ import {RoutePoints} from '../models/RoutePoints';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
     MatAutocompleteModule,
@@ -29,22 +30,58 @@ import {RoutePoints} from '../models/RoutePoints';
 export class PlannerPanelComponent implements OnInit {
   @ViewChild('leafletMap') leafletMap?: LeafletMapComponent;
 
-  fromControl = new FormControl<string>('', { nonNullable: true });
-  toControl = new FormControl<string>('', { nonNullable: true });
+  form: FormGroup;
+  fromFormControl = new FormControl<string>('', { nonNullable: true });
+  toFormControl = new FormControl<string>('', { nonNullable: true });
+  middlePointsFormArray: FormArray<FormControl<string | null>>;
+
   filteredFromCities$!: Observable<string[]>;
+  filteredMiddlePointCities$: Observable<string[]>[] = [];
   filteredToCities$!: Observable<string[]>;
   citiesToSelect: MapTilerCity[] = [];
 
   routePoints = new RoutePoints();
 
-  constructor(private apiGatewayService: ApiGatewayService) {}
-
-  ngOnInit(): void {
-    this.filteredFromCities$ = this.createCityFilter(this.fromControl, this.citiesToSelect);
-    this.filteredToCities$ = this.createCityFilter(this.toControl, this.citiesToSelect);
+  constructor(private apiGatewayService: ApiGatewayService, private fb: FormBuilder) {
+    this.middlePointsFormArray = this.fb.array<FormControl<string | null>>([]);
+    this.form = this.fb.group({
+      from: this.fromFormControl,
+      to: this.toFormControl,
+      middlePoints: this.middlePointsFormArray
+    });
   }
 
-  private createCityFilter(control: FormControl<string>, citiesRef: MapTilerCity[]): Observable<string[]> {
+  ngOnInit(): void {
+    this.filteredFromCities$ = this.createCityFilter(this.fromFormControl, this.citiesToSelect);
+    this.filteredToCities$ = this.createCityFilter(this.toFormControl, this.citiesToSelect);
+  }
+
+  addMiddlePointForm() {
+    const ctrl = this.fb.control('', { nonNullable: true });
+    this.middlePointsFormArray.push(ctrl);
+    this.filteredMiddlePointCities$.push(
+      ctrl.valueChanges.pipe(
+        startWith(''),
+        debounceTime(300),
+        switchMap(value => this.apiGatewayService.searchCities(value ?? '')),
+        map(cities => cities.map(city => city.place_name))
+      )
+    );
+  }
+
+  removeMiddlePointForm(index: number) {
+    this.middlePointsFormArray.removeAt(index);
+    this.filteredMiddlePointCities$.splice(index, 1);
+  }
+
+  onMiddlePointCitySelected(event: MatAutocompleteSelectedEvent) {
+    const city = this.citiesToSelect.find(c => c.place_name === event.option.value);
+    if (city) {
+      // TODO
+    }
+  }
+
+  createCityFilter(control: FormControl<string>, citiesRef: MapTilerCity[]): Observable<string[]> {
     return control.valueChanges.pipe(
       startWith(''),
       debounceTime(300),
@@ -66,7 +103,7 @@ export class PlannerPanelComponent implements OnInit {
   }
 
   onLocationPicked(event: { lat: number, lng: number }, isFrom: boolean) {
-    // Update the form control with the selected coordinates (or even some vague location name)
+    // TODO Update the form control with the selected coordinates (or even some vague location name)
     const point = { lat: event.lat, lng: event.lng };
     isFrom ? this.routePoints.setStart(point) : this.routePoints.setEnd(point);
   }
