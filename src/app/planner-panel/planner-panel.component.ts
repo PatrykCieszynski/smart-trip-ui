@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import {MapTilerCity, ApiGatewayService} from '../api-gateway-service/api-gateway.service';
 import { LeafletMapComponent } from '../leaflet-map/leaflet-map.component';
 import {RoutePoints} from '../models/RoutePoints';
+import {MatIconModule} from '@angular/material/icon';
 
 @Component({
   selector: 'planner-panel',
@@ -22,7 +23,8 @@ import {RoutePoints} from '../models/RoutePoints';
     MatInputModule,
     MatAutocompleteModule,
     MatButtonModule,
-    LeafletMapComponent
+    LeafletMapComponent,
+    MatIconModule
   ],
   templateUrl: './planner-panel.component.html',
   styleUrls: ['./planner-panel.component.scss']
@@ -64,6 +66,7 @@ export class PlannerPanelComponent implements OnInit {
         startWith(''),
         debounceTime(300),
         switchMap(value => this.apiGatewayService.searchCities(value ?? '')),
+        tap(cities => this.citiesToSelect = cities),
         map(cities => cities.map(city => city.place_name))
       )
     );
@@ -77,7 +80,9 @@ export class PlannerPanelComponent implements OnInit {
   onMiddlePointCitySelected(event: MatAutocompleteSelectedEvent) {
     const city = this.citiesToSelect.find(c => c.place_name === event.option.value);
     if (city) {
-      // TODO
+      const point = { lat: city.geometry.coordinates[1], lng: city.geometry.coordinates[0], pointName: city.place_name };
+      this.routePoints.addWaypoint(point);
+      this.leafletMap?.addMiddleMarker(point.lat, point.lng);
     }
   }
 
@@ -86,10 +91,14 @@ export class PlannerPanelComponent implements OnInit {
       startWith(''),
       debounceTime(300),
       switchMap(value => this.apiGatewayService.searchCities(value)),
-      tap(cities => citiesRef.splice(0, citiesRef.length, ...cities)),
+      tap(cities => {
+        citiesRef.splice(0, citiesRef.length, ...cities);
+        this.citiesToSelect = cities; //
+      }),
       map(cities => cities.map(city => city.place_name))
     );
   }
+
 
   onCitySelected(event: MatAutocompleteSelectedEvent, isFrom: boolean) {
     const city = this.citiesToSelect.find(c => c.place_name === event.option.value);

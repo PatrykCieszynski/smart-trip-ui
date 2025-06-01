@@ -19,6 +19,7 @@ export class LeafletMapComponent {
 
   map: L.Map | undefined;
   fromMarker: L.Marker | undefined;
+  middleMarkers: L.Marker[] = [];
   toMarker: L.Marker | undefined;
 
   options: MapOptions = {
@@ -87,7 +88,6 @@ export class LeafletMapComponent {
     });
   }
 
-
   addToMarker(lat: number, lng: number) {
     if (this.toMarker) {
       this.map?.removeLayer(this.toMarker);
@@ -101,6 +101,12 @@ export class LeafletMapComponent {
     })
   }
 
+  addMiddleMarker(lat: number, lng: number) {
+    console.log('addMiddleMarker', lat, lng);
+    const marker = L.marker([lat, lng], {draggable: true}).addTo((this.map as any));
+    marker.bindPopup('Middle Location').openPopup();
+    marker.on('dragend', (event: L.DragEndEvent) => {})
+  }
 
   drawRoute(route: any) {
     if (!route || !route.features || !route.features[0]?.geometry?.coordinates) {

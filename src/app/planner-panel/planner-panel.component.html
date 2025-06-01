@@ -23,20 +23,24 @@
   </mat-form-field>
 
     <div formArrayName="middlePoints">
-      <div *ngFor="let ctrl of middlePointsFormArray.controls; let i = index">
+      <div *ngFor="let ctrl of middlePointsFormArray.controls; let i = index" class="middle-point-row">
         <mat-form-field appearance="outline" class="w-100">
           <mat-label>Punkt pośredni {{ i + 1 }}:</mat-label>
           <input matInput [formControl]="ctrl"
                  [matAutocomplete]="autoMiddlePoint"
                  placeholder="Wpisz punkt pośredni" autocomplete="off" />
-          <mat-autocomplete #autoMiddlePoint="matAutocomplete">
+          <mat-autocomplete #autoMiddlePoint="matAutocomplete" (optionSelected)=onMiddlePointCitySelected($event)>
             <mat-option *ngFor="let option of filteredMiddlePointCities$[i] | async" [value]="option">
               {{ option }}
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>
+        <button mat-icon-button color="warn" (click)="removeMiddlePointForm(i)" aria-label="Usuń punkt pośredni">
+          <mat-icon>close</mat-icon>
+        </button>
       </div>
     </div>
+
 
     <div class="example-button-row">
       <button mat-button (click)="addMiddlePointForm()">Dodaj punkt pośredni</button>
