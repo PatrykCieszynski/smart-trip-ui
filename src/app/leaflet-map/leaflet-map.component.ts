@@ -35,6 +35,24 @@ export class LeafletMapComponent {
     zoomControl: false
   };
 
+  startIcon = new L.Icon({
+    iconUrl: 'media/marker-icon-green.png',
+    shadowUrl: 'media/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
+  endIcon = new L.Icon({
+    iconUrl: 'media/marker-icon-red.png',
+    shadowUrl: 'media/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
   onMapReady(map: L.Map) {
     this.map = map;
     control.zoom({ position: 'bottomright' }).addTo(map);
@@ -79,8 +97,11 @@ export class LeafletMapComponent {
       this.map?.removeLayer(this.fromMarker);
     }
 
-    this.fromMarker = L.marker([lat, lng], {draggable: true}).addTo((this.map as any));
-    this.fromMarker.bindPopup('From Location').openPopup();
+    this.fromMarker = L.marker([lat, lng], {
+      draggable: true,
+      icon: this.startIcon
+    }).addTo((this.map as any));
+    this.fromMarker.bindPopup('Start').openPopup();
     this.fromMarker.on('dragend', (event: L.DragEndEvent) => {
       const { lat, lng } = event.target.getLatLng();
       this.fromMoved.emit({ lat, lng });
@@ -92,8 +113,11 @@ export class LeafletMapComponent {
       this.map?.removeLayer(this.toMarker);
     }
 
-    this.toMarker = L.marker([lat, lng], {draggable: true}).addTo((this.map as any));
-    this.toMarker.bindPopup('To Location').openPopup();
+    this.toMarker = L.marker([lat, lng], {
+      draggable: true,
+      icon: this.endIcon
+    }).addTo((this.map as any));
+    this.toMarker.bindPopup('Koniec').openPopup();
     this.toMarker.on('dragend', (event: L.DragEndEvent) => {
       const { lat, lng } = event.target.getLatLng();
       this.toMoved.emit({ lat, lng });
