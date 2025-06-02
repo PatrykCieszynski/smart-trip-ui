@@ -1,7 +1,10 @@
+import {L} from '@angular/cdk/keycodes';
+
 export interface LocationPoint {
   lat: number;
   lng: number;
   pointName?: string;
+  marker?: L.Marker;
 }
 
 export class RoutePoints {
@@ -31,6 +34,10 @@ export class RoutePoints {
 
   addWaypoint(point: LocationPoint) {
     this.waypoints.push(point);
+  }
+
+  removeWaypoint(point: LocationPoint) {
+    this.waypoints = this.waypoints.filter(p => p !== point);
   }
 
   get all(): LocationPoint[] {

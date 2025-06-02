@@ -3,6 +3,7 @@ import {control, latLng, MapOptions, tileLayer} from 'leaflet';
 import {environment} from '../../environments/environment';
 import {LeafletModule} from '@bluehalo/ngx-leaflet';
 import * as L from 'leaflet';
+import {LocationPoint} from '../models/RoutePoints';
 
 @Component({
   selector: 'leaflet-map',
@@ -75,14 +76,30 @@ export class LeafletMapComponent {
         const toBtn = document.getElementById('set-to-btn');
         if (fromBtn) {
           fromBtn.onclick = () => {
-            this.addFromMarker(lat, lng);
+            this.addMarker(lat, lng, {
+              popupText: 'Start',
+              icon: this.startIcon,
+              markerRef: "fromMarker",
+              onDragEnd: (event) => {
+                const { lat, lng } = event.target.getLatLng();
+                this.fromMoved.emit({ lat, lng });
+              }
+            });
             map.closePopup();
             this.fromSelected.emit({ lat, lng });
           };
         }
         if (toBtn) {
           toBtn.onclick = () => {
-            this.addToMarker(lat, lng);
+            this.addMarker(lat, lng, {
+              popupText: 'Koniec',
+              icon: this.endIcon,
+              markerRef: "toMarker",
+              onDragEnd: (event) => {
+                const { lat, lng } = event.target.getLatLng();
+                this.toMoved.emit({ lat, lng });
+              }
+            });
             map.closePopup();
             this.toSelected.emit({ lat, lng });
           };
@@ -91,44 +108,46 @@ export class LeafletMapComponent {
     });
   }
 
+  addMarker(
+    lat: number,
+    lng: number,
+    options: {
+      popupText?: string;
+      icon?: L.Icon;
+      draggable?: boolean;
+      onDragEnd?: (e: L.DragEndEvent) => void;
+      markerRef?: "fromMarker" | "toMarker" | null;
+    } = {}
+  ): L.Marker {
 
-  addFromMarker(lat: number, lng: number) {
-    if (this.fromMarker) {
-      this.map?.removeLayer(this.fromMarker);
+    if (options.markerRef && (this as any)[options.markerRef]) {
+      this.map?.removeLayer((this as any)[options.markerRef]);
     }
 
-    this.fromMarker = L.marker([lat, lng], {
-      draggable: true,
-      icon: this.startIcon
-    }).addTo((this.map as any));
-    this.fromMarker.bindPopup('Start').openPopup();
-    this.fromMarker.on('dragend', (event: L.DragEndEvent) => {
-      const { lat, lng } = event.target.getLatLng();
-      this.fromMoved.emit({ lat, lng });
-    });
-  }
+    const marker = L.marker([lat, lng], {
+      draggable: options.draggable ?? true,
+      ...(options.icon ? { icon: options.icon } : {})
+    }).addTo(this.map!);
 
-  addToMarker(lat: number, lng: number) {
-    if (this.toMarker) {
-      this.map?.removeLayer(this.toMarker);
+    if (options.popupText) {
+      marker.bindPopup(options.popupText).openPopup();
     }
 
-    this.toMarker = L.marker([lat, lng], {
-      draggable: true,
-      icon: this.endIcon
-    }).addTo((this.map as any));
-    this.toMarker.bindPopup('Koniec').openPopup();
-    this.toMarker.on('dragend', (event: L.DragEndEvent) => {
-      const { lat, lng } = event.target.getLatLng();
-      this.toMoved.emit({ lat, lng });
-    })
+    if (options.onDragEnd) {
+      marker.on('dragend', options.onDragEnd);
+    }
+
+    if (options.markerRef) {
+      (this as any)[options.markerRef] = marker;
+    } else {
+      this.middleMarkers.push(marker);
+    }
+
+    return marker;
   }
 
-  addMiddleMarker(lat: number, lng: number) {
-    console.log('addMiddleMarker', lat, lng);
-    const marker = L.marker([lat, lng], {draggable: true}).addTo((this.map as any));
-    marker.bindPopup('Middle Location').openPopup();
-    marker.on('dragend', (event: L.DragEndEvent) => {})
+  removeMarker(point: LocationPoint) {
+    this.map?.removeLayer(point.marker!);
   }
 
   drawRoute(route: any) {

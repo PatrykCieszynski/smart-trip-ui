@@ -17,7 +17,7 @@
       placeholder="Wybierz miasto początkowe"
       [control]="fromFormControl"
       [cityOptions$]="filteredFromCities$"
-      (optionSelected)="handleCitySelected($event, 'from')">
+      (optionSelected)="handleCitySelected($event, 'start')">
     </city-autocomplete>
 
     <span formArrayName="middlePoints">
@@ -32,7 +32,7 @@
           </city-autocomplete>
           <button mat-icon-button
                   class="middle-point-remove-btn"
-                  (click)="removeMiddlePointForm(i)">
+                  (click)="removeMiddlePoint(i)">
             <mat-icon>delete</mat-icon>
           </button>
         </div>
@@ -50,7 +50,7 @@
       placeholder="Wybierz miasto końcowe"
       [control]="toFormControl"
       [cityOptions$]="filteredToCities$"
-      (optionSelected)="handleCitySelected($event, 'to')">
+      (optionSelected)="handleCitySelected($event, 'end')">
     </city-autocomplete>
 
   <div class="panel-actions">

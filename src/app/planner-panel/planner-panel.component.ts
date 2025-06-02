@@ -9,7 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import {MapTilerCity, ApiGatewayService} from '../api-gateway-service/api-gateway.service';
 import { LeafletMapComponent } from '../leaflet-map/leaflet-map.component';
-import {RoutePoints} from '../models/RoutePoints';
+import {LocationPoint, RoutePoints} from '../models/RoutePoints';
 import {MatIconModule} from '@angular/material/icon';
 import {CityAutocompleteComponent} from './components/city-autocomplete/city-autocomplete.component';
 
@@ -74,9 +74,13 @@ export class PlannerPanelComponent implements OnInit {
     );
   }
 
-  removeMiddlePointForm(index: number) {
+  removeMiddlePoint(index: number) {
+    const point = this.routePoints.getWaypoints()[index];
+
+    this.leafletMap?.removeMarker(point);
     this.middlePointsFormArray.removeAt(index);
     this.filteredMiddlePointCities$.splice(index, 1);
+    this.routePoints.removeWaypoint(point);
   }
 
   createCityFilter(control: FormControl<string>, citiesRef: MapTilerCity[]): Observable<string[]> {
@@ -92,24 +96,45 @@ export class PlannerPanelComponent implements OnInit {
     );
   }
 
-  handleCitySelected(event: MatAutocompleteSelectedEvent, type: 'from' | 'to' | 'middle') {
+  handleCitySelected(event: MatAutocompleteSelectedEvent, type: 'start' | 'end' | 'middle') {
     const city = this.citiesToSelect.find(c => c.place_name === event.option.value);
     if (!city) return;
-    const point = {
+    const point: LocationPoint = {
       lat: city.geometry.coordinates[1],
       lng: city.geometry.coordinates[0],
       pointName: city.place_name
     };
 
-    if (type === 'from') {
+    if (type === 'start') {
       this.routePoints.setStart(point);
-      this.leafletMap?.addFromMarker(point.lat, point.lng);
-    } else if (type === 'to') {
+      point.marker = this.leafletMap?.addMarker(point.lat, point.lng, {
+        popupText: 'Start',
+        icon: this.leafletMap.startIcon,
+        markerRef: "fromMarker",
+        onDragEnd: (event) => {
+          const { lat, lng } = event.target.getLatLng();
+          this.leafletMap?.fromMoved.emit({ lat, lng });
+        }
+      });
+
+    } else if (type === 'end') {
       this.routePoints.setEnd(point);
-      this.leafletMap?.addToMarker(point.lat, point.lng);
+      point.marker = this.leafletMap?.addMarker(point.lat, point.lng, {
+        popupText: 'Koniec',
+        icon: this.leafletMap.endIcon,
+        markerRef: "toMarker",
+        onDragEnd: (event) => {
+          const { lat, lng } = event.target.getLatLng();
+          this.leafletMap?.toMoved.emit({ lat, lng });
+        }
+      });
+
     } else if (type === 'middle') {
       this.routePoints.addWaypoint(point);
-      this.leafletMap?.addMiddleMarker(point.lat, point.lng);
+      point.marker = this.leafletMap?.addMarker(point.lat, point.lng, {
+        popupText: 'Middle Location'
+        // TODO
+      });
     }
   }
 
