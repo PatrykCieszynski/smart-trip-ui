@@ -35,7 +35,6 @@ export class LeafletMapComponent {
     zoomControl: false
   };
 
-
   onMapReady(map: L.Map) {
     this.map = map;
     control.zoom({ position: 'bottomright' }).addTo(map);

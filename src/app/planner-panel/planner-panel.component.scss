@@ -79,9 +79,21 @@
 
   .middle-point-row {
     display: flex;
-    align-items: center;
+    align-items: baseline; // lub flex-start
     gap: 8px;
-    margin-bottom: 8px;
     margin-left: 15px;
+
+    city-autocomplete {
+      flex: 1;
+    }
+
+    .middle-point-remove-btn {
+      align-self: flex-start;
+      margin-top: 8px;
+    }
+  }
+
+  .add-middle-point-btn-wrapper {
+    margin: 0 0 0.75rem 0;
   }
 }

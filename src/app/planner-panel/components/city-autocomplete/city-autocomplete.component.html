@@ -1,0 +1,16 @@
+<mat-form-field appearance="outline" class="w-100">
+  <mat-label>{{ label }}</mat-label>
+  <input
+    type="text"
+    matInput
+    [placeholder]="placeholder"
+    [formControl]="control"
+    [matAutocomplete]="auto"
+    (blur)="blur.emit()"
+  />
+  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="optionSelected.emit($event)">
+    <mat-option *ngFor="let city of cityOptions$ | async" [value]="city">
+      {{ city }}
+    </mat-option>
+  </mat-autocomplete>
+</mat-form-field>

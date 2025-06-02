@@ -11,6 +11,7 @@ import {MapTilerCity, ApiGatewayService} from '../api-gateway-service/api-gatewa
 import { LeafletMapComponent } from '../leaflet-map/leaflet-map.component';
 import {RoutePoints} from '../models/RoutePoints';
 import {MatIconModule} from '@angular/material/icon';
+import {CityAutocompleteComponent} from './components/city-autocomplete/city-autocomplete.component';
 
 @Component({
   selector: 'planner-panel',
@@ -23,8 +24,9 @@ import {MatIconModule} from '@angular/material/icon';
     MatInputModule,
     MatAutocompleteModule,
     MatButtonModule,
+    MatIconModule,
     LeafletMapComponent,
-    MatIconModule
+    CityAutocompleteComponent
   ],
   templateUrl: './planner-panel.component.html',
   styleUrls: ['./planner-panel.component.scss']
@@ -35,7 +37,7 @@ export class PlannerPanelComponent implements OnInit {
   form: FormGroup;
   fromFormControl = new FormControl<string>('', { nonNullable: true });
   toFormControl = new FormControl<string>('', { nonNullable: true });
-  middlePointsFormArray: FormArray<FormControl<string | null>>;
+  middlePointsFormArray: FormArray<FormControl<string>>;
 
   filteredFromCities$!: Observable<string[]>;
   filteredMiddlePointCities$: Observable<string[]>[] = [];
@@ -45,7 +47,7 @@ export class PlannerPanelComponent implements OnInit {
   routePoints = new RoutePoints();
 
   constructor(private apiGatewayService: ApiGatewayService, private fb: FormBuilder) {
-    this.middlePointsFormArray = this.fb.array<FormControl<string | null>>([]);
+    this.middlePointsFormArray = this.fb.array<FormControl<string>>([]);
     this.form = this.fb.group({
       from: this.fromFormControl,
       to: this.toFormControl,
@@ -77,15 +79,6 @@ export class PlannerPanelComponent implements OnInit {
     this.filteredMiddlePointCities$.splice(index, 1);
   }
 
-  onMiddlePointCitySelected(event: MatAutocompleteSelectedEvent) {
-    const city = this.citiesToSelect.find(c => c.place_name === event.option.value);
-    if (city) {
-      const point = { lat: city.geometry.coordinates[1], lng: city.geometry.coordinates[0], pointName: city.place_name };
-      this.routePoints.addWaypoint(point);
-      this.leafletMap?.addMiddleMarker(point.lat, point.lng);
-    }
-  }
-
   createCityFilter(control: FormControl<string>, citiesRef: MapTilerCity[]): Observable<string[]> {
     return control.valueChanges.pipe(
       startWith(''),
@@ -99,15 +92,24 @@ export class PlannerPanelComponent implements OnInit {
     );
   }
 
-
-  onCitySelected(event: MatAutocompleteSelectedEvent, isFrom: boolean) {
+  handleCitySelected(event: MatAutocompleteSelectedEvent, type: 'from' | 'to' | 'middle') {
     const city = this.citiesToSelect.find(c => c.place_name === event.option.value);
-    if (city) {
-      const point = { lat: city.geometry.coordinates[1], lng: city.geometry.coordinates[0], pointName: city.place_name };
-      isFrom ? this.routePoints.setStart(point) : this.routePoints.setEnd(point);
-      isFrom
-        ? this.leafletMap?.addFromMarker(point.lat, point.lng)
-        : this.leafletMap?.addToMarker(point.lat, point.lng);
+    if (!city) return;
+    const point = {
+      lat: city.geometry.coordinates[1],
+      lng: city.geometry.coordinates[0],
+      pointName: city.place_name
+    };
+
+    if (type === 'from') {
+      this.routePoints.setStart(point);
+      this.leafletMap?.addFromMarker(point.lat, point.lng);
+    } else if (type === 'to') {
+      this.routePoints.setEnd(point);
+      this.leafletMap?.addToMarker(point.lat, point.lng);
+    } else if (type === 'middle') {
+      this.routePoints.addWaypoint(point);
+      this.leafletMap?.addMiddleMarker(point.lat, point.lng);
     }
   }
 

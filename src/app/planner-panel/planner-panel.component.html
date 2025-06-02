@@ -12,49 +12,46 @@
   </div>
   <form [formGroup]="form">
 
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Z:</mat-label>
-    <input matInput [formControl]="fromFormControl" [matAutocomplete]="autoFrom" placeholder="Wpisz miejsce początkowe" autocomplete="off"/>
-    <mat-autocomplete #autoFrom="matAutocomplete"  (optionSelected)="onCitySelected($event, true)" >
-      <mat-option *ngFor="let city of filteredFromCities$ | async" [value]="city">
-        {{ city }}
-      </mat-option>
-    </mat-autocomplete>
-  </mat-form-field>
+    <city-autocomplete
+      label="Początek trasy"
+      placeholder="Wybierz miasto początkowe"
+      [control]="fromFormControl"
+      [cityOptions$]="filteredFromCities$"
+      (optionSelected)="handleCitySelected($event, 'from')">
+    </city-autocomplete>
 
-    <div formArrayName="middlePoints">
-      <div *ngFor="let ctrl of middlePointsFormArray.controls; let i = index" class="middle-point-row">
-        <mat-form-field appearance="outline" class="w-100">
-          <mat-label>Punkt pośredni {{ i + 1 }}:</mat-label>
-          <input matInput [formControl]="ctrl"
-                 [matAutocomplete]="autoMiddlePoint"
-                 placeholder="Wpisz punkt pośredni" autocomplete="off" />
-          <mat-autocomplete #autoMiddlePoint="matAutocomplete" (optionSelected)=onMiddlePointCitySelected($event)>
-            <mat-option *ngFor="let option of filteredMiddlePointCities$[i] | async" [value]="option">
-              {{ option }}
-            </mat-option>
-          </mat-autocomplete>
-        </mat-form-field>
-        <button mat-icon-button color="warn" (click)="removeMiddlePointForm(i)" aria-label="Usuń punkt pośredni">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
+    <span formArrayName="middlePoints">
+      <ng-container *ngFor="let ctrl of middlePointsFormArray.controls; let i = index">
+        <div class="middle-point-row">
+          <city-autocomplete
+            [label]="'Punkt pośredni ' + (i + 1)"
+            placeholder="Wybierz miasto pośrednie"
+            [control]="ctrl"
+            [cityOptions$]="filteredMiddlePointCities$[i]"
+            (optionSelected)="handleCitySelected($event, 'middle')">
+          </city-autocomplete>
+          <button mat-icon-button
+                  class="middle-point-remove-btn"
+                  (click)="removeMiddlePointForm(i)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </ng-container>
+    </span>
+
+    <div class="add-middle-point-btn-wrapper">
+    <button mat-button (click)="addMiddlePointForm()">Dodaj punkt pośredni
+        <mat-icon>add</mat-icon>
+    </button>
     </div>
 
-
-    <div class="example-button-row">
-      <button mat-button (click)="addMiddlePointForm()">Dodaj punkt pośredni</button>
-    </div>
-
-  <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Do:</mat-label>
-    <input matInput [formControl]="toFormControl" [matAutocomplete]="autoTo" placeholder="Wpisz miejsce docelowe" autocomplete="off"/>
-    <mat-autocomplete #autoTo="matAutocomplete"  (optionSelected)="onCitySelected($event, false)" >
-      <mat-option *ngFor="let city of filteredToCities$ | async" [value]="city">
-        {{ city }}
-      </mat-option>
-    </mat-autocomplete>
-  </mat-form-field>
+    <city-autocomplete
+      label="Koniec trasy"
+      placeholder="Wybierz miasto końcowe"
+      [control]="toFormControl"
+      [cityOptions$]="filteredToCities$"
+      (optionSelected)="handleCitySelected($event, 'to')">
+    </city-autocomplete>
 
   <div class="panel-actions">
     <button mat-raised-button color="primary" (click)="findRoute()" >Znajdź trasę</button>
