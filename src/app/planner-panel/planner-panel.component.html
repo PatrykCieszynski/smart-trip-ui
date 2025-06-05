@@ -1,8 +1,6 @@
 <leaflet-map #leafletMap
              (fromSelected)="onLocationPicked($event, true)"
              (toSelected)="onLocationPicked($event, false)"
-             (fromMoved)="onLocationPicked($event, true)"
-              (toMoved)="onLocationPicked($event, false)"
 >
 </leaflet-map>
 
@@ -20,24 +18,33 @@
       (optionSelected)="handleCitySelected($event, 'start')">
     </city-autocomplete>
 
-    <span formArrayName="middlePoints">
-      <ng-container *ngFor="let ctrl of middlePointsFormArray.controls; let i = index">
-        <div class="middle-point-row">
+    <div formArrayName="middlePoints">
+      <div
+        cdkDropList
+        [cdkDropListData]="middlePointsFormArray.controls"
+        (cdkDropListDropped)="dropMiddlePoint($event)"
+        class="drag-drop"
+      >
+        <div
+          class="middle-point"
+          *ngFor="let ctrl of middlePointsFormArray.controls; let i = index"
+          cdkDrag
+        >
+          <mat-icon cdkDragHandle style="cursor:move; margin-right: 8px;">drag_indicator</mat-icon>
+
           <city-autocomplete
             [label]="'Punkt pośredni ' + (i + 1)"
             placeholder="Wybierz miasto pośrednie"
             [control]="ctrl"
             [cityOptions$]="filteredMiddlePointCities$[i]"
-            (optionSelected)="handleCitySelected($event, 'middle')">
-          </city-autocomplete>
-          <button mat-icon-button
-                  class="middle-point-remove-btn"
-                  (click)="removeMiddlePoint(i)">
+            (optionSelected)="handleCitySelected($event, 'middle')"
+          ></city-autocomplete>
+          <button mat-icon-button class="middle-point-remove-btn" (click)="removeMiddlePoint(i)">
             <mat-icon>delete</mat-icon>
           </button>
         </div>
-      </ng-container>
-    </span>
+      </div>
+    </div>
 
     <div class="add-middle-point-btn-wrapper">
     <button mat-button (click)="addMiddlePointForm()">Dodaj punkt pośredni

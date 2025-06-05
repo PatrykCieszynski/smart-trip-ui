@@ -15,13 +15,8 @@ export class LeafletMapComponent {
   @Output() fromSelected = new EventEmitter<{ lat: number, lng: number }>();
   @Output() toSelected = new EventEmitter<{ lat: number, lng: number }>();
 
-  @Output() fromMoved = new EventEmitter<{ lat: number, lng: number }>();
-  @Output() toMoved = new EventEmitter<{ lat: number, lng: number }>();
-
   map: L.Map | undefined;
-  fromMarker: L.Marker | undefined;
   middleMarkers: L.Marker[] = [];
-  toMarker: L.Marker | undefined;
 
   options: MapOptions = {
     layers: [
@@ -79,11 +74,7 @@ export class LeafletMapComponent {
             this.addMarker(lat, lng, {
               popupText: 'Start',
               icon: this.startIcon,
-              markerRef: "fromMarker",
-              onDragEnd: (event) => {
-                const { lat, lng } = event.target.getLatLng();
-                this.fromMoved.emit({ lat, lng });
-              }
+              markerRef: "start",
             });
             map.closePopup();
             this.fromSelected.emit({ lat, lng });
@@ -94,11 +85,7 @@ export class LeafletMapComponent {
             this.addMarker(lat, lng, {
               popupText: 'Koniec',
               icon: this.endIcon,
-              markerRef: "toMarker",
-              onDragEnd: (event) => {
-                const { lat, lng } = event.target.getLatLng();
-                this.toMoved.emit({ lat, lng });
-              }
+              markerRef: "end",
             });
             map.closePopup();
             this.toSelected.emit({ lat, lng });
@@ -114,9 +101,9 @@ export class LeafletMapComponent {
     options: {
       popupText?: string;
       icon?: L.Icon;
-      draggable?: boolean;
-      onDragEnd?: (e: L.DragEndEvent) => void;
-      markerRef?: "fromMarker" | "toMarker" | null;
+      routePoint?: LocationPoint;
+      markerRef?: "start" | "end" | "index";
+      middlePointIndex?: number;
     } = {}
   ): L.Marker {
 
@@ -125,7 +112,7 @@ export class LeafletMapComponent {
     }
 
     const marker = L.marker([lat, lng], {
-      draggable: options.draggable ?? true,
+      draggable: true,
       ...(options.icon ? { icon: options.icon } : {})
     }).addTo(this.map!);
 
@@ -133,11 +120,17 @@ export class LeafletMapComponent {
       marker.bindPopup(options.popupText).openPopup();
     }
 
-    if (options.onDragEnd) {
-      marker.on('dragend', options.onDragEnd);
-    }
+    marker.on('dragend', (event) => {
+      const { lat, lng } = event.target.getLatLng();
+      console.log('Marker dragged to', lat, lng);
+      console.log(options);
+      if (options.routePoint) {
+        options.routePoint.lat = lat;
+        options.routePoint.lng = lng;
+      }
+    });
 
-    if (options.markerRef) {
+    if (options.markerRef == "start" || options.markerRef == "end") {
       (this as any)[options.markerRef] = marker;
     } else {
       this.middleMarkers.push(marker);

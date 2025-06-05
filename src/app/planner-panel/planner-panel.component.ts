@@ -12,6 +12,7 @@ import { LeafletMapComponent } from '../leaflet-map/leaflet-map.component';
 import {LocationPoint, RoutePoints} from '../models/RoutePoints';
 import {MatIconModule} from '@angular/material/icon';
 import {CityAutocompleteComponent} from './components/city-autocomplete/city-autocomplete.component';
+import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'planner-panel',
@@ -26,7 +27,8 @@ import {CityAutocompleteComponent} from './components/city-autocomplete/city-aut
     MatButtonModule,
     MatIconModule,
     LeafletMapComponent,
-    CityAutocompleteComponent
+    CityAutocompleteComponent,
+    DragDropModule
   ],
   templateUrl: './planner-panel.component.html',
   styleUrls: ['./planner-panel.component.scss']
@@ -76,11 +78,12 @@ export class PlannerPanelComponent implements OnInit {
 
   removeMiddlePoint(index: number) {
     const point = this.routePoints.getWaypoints()[index];
-
-    this.leafletMap?.removeMarker(point);
+    if (point) {
+      this.leafletMap?.removeMarker(point);
+      this.routePoints.removeWaypoint(point);
+    }
     this.middlePointsFormArray.removeAt(index);
     this.filteredMiddlePointCities$.splice(index, 1);
-    this.routePoints.removeWaypoint(point);
   }
 
   createCityFilter(control: FormControl<string>, citiesRef: MapTilerCity[]): Observable<string[]> {
@@ -96,6 +99,12 @@ export class PlannerPanelComponent implements OnInit {
     );
   }
 
+  dropMiddlePoint(event: CdkDragDrop<any[]>) {
+    moveItemInArray(this.middlePointsFormArray.controls, event.previousIndex, event.currentIndex);
+    moveItemInArray(this.routePoints.getWaypoints(), event.previousIndex, event.currentIndex);
+    this.middlePointsFormArray.updateValueAndValidity();
+  }
+
   handleCitySelected(event: MatAutocompleteSelectedEvent, type: 'start' | 'end' | 'middle') {
     const city = this.citiesToSelect.find(c => c.place_name === event.option.value);
     if (!city) return;
@@ -109,37 +118,35 @@ export class PlannerPanelComponent implements OnInit {
       this.routePoints.setStart(point);
       point.marker = this.leafletMap?.addMarker(point.lat, point.lng, {
         popupText: 'Start',
+        routePoint: point,
         icon: this.leafletMap.startIcon,
-        markerRef: "fromMarker",
-        onDragEnd: (event) => {
-          const { lat, lng } = event.target.getLatLng();
-          this.leafletMap?.fromMoved.emit({ lat, lng });
-        }
+        markerRef: "start",
       });
 
     } else if (type === 'end') {
       this.routePoints.setEnd(point);
       point.marker = this.leafletMap?.addMarker(point.lat, point.lng, {
         popupText: 'Koniec',
+        routePoint: point,
         icon: this.leafletMap.endIcon,
-        markerRef: "toMarker",
-        onDragEnd: (event) => {
-          const { lat, lng } = event.target.getLatLng();
-          this.leafletMap?.toMoved.emit({ lat, lng });
-        }
+        markerRef: "end",
       });
 
     } else if (type === 'middle') {
       this.routePoints.addWaypoint(point);
       point.marker = this.leafletMap?.addMarker(point.lat, point.lng, {
-        popupText: 'Middle Location'
-        // TODO
+        popupText: 'Punkt pośredni',
+        routePoint: point,
+        markerRef: "index",
+        middlePointIndex: this.routePoints.getWaypoints().length - 1,
       });
     }
   }
 
   onLocationPicked(event: { lat: number, lng: number }, isFrom: boolean) {
     // TODO Update the form control with the selected coordinates (or even some vague location name)
+    console.log(event);
+    console.log(isFrom);
     const point = { lat: event.lat, lng: event.lng };
     isFrom ? this.routePoints.setStart(point) : this.routePoints.setEnd(point);
   }
