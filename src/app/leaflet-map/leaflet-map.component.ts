@@ -154,7 +154,8 @@ export class LeafletMapComponent {
     const coords = route.features[0].geometry.coordinates.map(
       ([lng, lat]: [number, number]) => [lat, lng]
     );
-    (this as any).routeLayer = L.polyline(coords, { color: 'blue', weight: 5 }).addTo(this.map!);
+    (this as any).routeLayer = L.polyline(coords, { color: '#2563eb', weight: 5, opacity: 0.8
+    }).addTo(this.map!);
     this.map?.fitBounds((this as any).routeLayer.getBounds());
   }
 }

@@ -18,7 +18,7 @@
       (optionSelected)="handleCitySelected($event, 'start')">
     </city-autocomplete>
 
-    <div formArrayName="middlePoints">
+    <div formArrayName="middlePoints" *ngIf="middlePointsFormArray.length > 0">
       <div
         cdkDropList
         [cdkDropListData]="middlePointsFormArray.controls"

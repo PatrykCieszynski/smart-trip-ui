@@ -1,0 +1,9 @@
+::ng-deep .route-wave {
+  filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.6));
+  transition: opacity 0.1s ease-out;
+}
+
+::ng-deep .route-wave path {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
