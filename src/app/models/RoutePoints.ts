@@ -1,10 +1,12 @@
 import {L} from '@angular/cdk/keycodes';
+import {FormControl} from '@angular/forms';
 
 export interface LocationPoint {
   lat: number;
   lng: number;
   pointName?: string;
   marker?: L.Marker;
+  formControl?: FormControl<string>;
 }
 
 export class RoutePoints {

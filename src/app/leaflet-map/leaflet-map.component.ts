@@ -14,7 +14,7 @@ import {LocationPoint, RoutePoints} from '../models/RoutePoints';
 export class LeafletMapComponent {
   @Input() routePoints!: RoutePoints;
 
-  @Output() pointModifiedByMap = new EventEmitter<{point: LocationPoint, type: 'start' | 'end' | 'middle'}>();
+  @Output() pointModifiedByMap = new EventEmitter<{point: LocationPoint, type: 'start' | 'end' | 'middle', dragged: boolean}>();
 
   map: L.Map | undefined;
 
@@ -87,8 +87,10 @@ export class LeafletMapComponent {
             this.addMarker(
               point,
               'start',
+              undefined,
               'Start',
-              this.startIcon
+              this.startIcon,
+              'map'
             );
             map.closePopup();
           };
@@ -98,8 +100,10 @@ export class LeafletMapComponent {
             this.addMarker(
               point,
               "middle",
+              undefined,
               'Punkt pośredni',
               undefined,
+              'map'
             );
           };
         }
@@ -108,8 +112,10 @@ export class LeafletMapComponent {
             this.addMarker(
               point,
               'end',
+              undefined,
               'Koniec',
               this.endIcon,
+              'map'
             );
             map.closePopup();
           };
@@ -121,16 +127,18 @@ export class LeafletMapComponent {
   addMarker(
       routePoint: LocationPoint,
       markerRef: "start" | "end" | "middle",
+      index?: number,
       popupText?: string,
       icon?: L.Icon,
+      source?: "map" | "form"
   ) {
 
-    if(markerRef != "middle") {
-      if (this.moveMarkerIfExist(markerRef, routePoint)) {
-        const type = markerRef as 'start' | 'end';
-        this.pointModifiedByMap.emit({point: routePoint, type});
-        return;
+    if (this.moveMarkerIfExist(markerRef, routePoint, index)) {
+      const type = markerRef as 'start' | 'end';
+      if (source == "map") {
+        this.pointModifiedByMap.emit({point: routePoint, type, dragged: false});
       }
+      return;
     }
 
     const marker = L.marker([routePoint?.lat, routePoint?.lng], {
@@ -148,7 +156,7 @@ export class LeafletMapComponent {
         routePoint.lat = lat;
         routePoint.lng = lng;
         const type = markerRef === 'start' ? 'start' : markerRef === 'end' ? 'end' : 'middle';
-        this.pointModifiedByMap.emit({point: routePoint, type});
+        this.pointModifiedByMap.emit({point: routePoint, type, dragged: true});
       }
     });
 
@@ -158,19 +166,25 @@ export class LeafletMapComponent {
 
     if (markerRef == "start") {
       this.routePoints?.setStart(routePoint!);
-      this.pointModifiedByMap.emit({point: routePoint, type: 'start'});
+      if (source == "map") {
+        this.pointModifiedByMap.emit({point: routePoint, type: 'start', dragged: false});
+      }
     }
     else if (markerRef == "end") {
       this.routePoints?.setEnd(routePoint!);
-      this.pointModifiedByMap.emit({point: routePoint, type: 'end'});
+      if (source == "map") {
+        this.pointModifiedByMap.emit({point: routePoint, type: 'end', dragged: false});
+      }
     }
     else if (markerRef == "middle") {
       this.routePoints?.addWaypoint(routePoint!);
-      this.pointModifiedByMap.emit({point: routePoint, type: 'middle'});
+      if (source == "map") {
+        this.pointModifiedByMap.emit({point: routePoint, type: 'middle', dragged: false});
+      }
     }
   }
 
-  moveMarkerIfExist(markerRef: string, routePoint: LocationPoint): boolean {
+  moveMarkerIfExist(markerRef: string, routePoint: LocationPoint, index?: number): boolean {
     if(markerRef == "start" && this.routePoints?.getStart()) {
       const start = this.routePoints.getStart()!;
       start.marker!.setLatLng([routePoint.lat, routePoint.lng]);
@@ -178,12 +192,21 @@ export class LeafletMapComponent {
       start.lng = routePoint.lng;
       return true;
     }
-    else if(this.routePoints?.getEnd()) {
+    else if(markerRef == "end" && this.routePoints?.getEnd()) {
       const end = this.routePoints.getEnd()!;
       end.marker!.setLatLng([routePoint.lat, routePoint.lng]);
       end.lat = routePoint.lat;
       end.lng = routePoint.lng;
       return true;
+    }
+    else if(markerRef == "middle" && index != undefined) {
+      if (this.routePoints.getWaypoints()[index]) {
+        const point = this.routePoints.getWaypoints()[index];
+        point.marker!.setLatLng([routePoint.lat, routePoint.lng]);
+        point.lat = routePoint.lat;
+        point.lng = routePoint.lng;
+        return true;
+      }
     }
     return false;
   }

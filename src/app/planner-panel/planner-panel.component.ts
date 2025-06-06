@@ -107,7 +107,7 @@ export class PlannerPanelComponent implements OnInit {
     this.middlePointsFormArray.updateValueAndValidity();
   }
 
-  handleCitySelected(event: MatAutocompleteSelectedEvent, type: 'start' | 'end' | 'middle') {
+  handleCitySelected(event: MatAutocompleteSelectedEvent, type: 'start' | 'end' | 'middle', index?: number) {
     const city = this.citiesToSelect.find(c => c.place_name === event.option.value);
     if (!city) return;
     const point: LocationPoint = {
@@ -117,33 +117,42 @@ export class PlannerPanelComponent implements OnInit {
     };
 
     if (type === 'start') {
+      point.formControl = this.fromFormControl;
       this.leafletMap?.addMarker(
         point,
         'start',
+        undefined,
         'Start',
-        this.leafletMap.startIcon
+        this.leafletMap.startIcon,
+        'form'
       );
 
     } else if (type === 'end') {
+      point.formControl = this.toFormControl;
       this.leafletMap?.addMarker(
         point,
         'end',
+        undefined,
         'Koniec',
         this.leafletMap.endIcon,
+        'form'
       );
 
     } else if (type === 'middle') {
+      point.formControl = this.middlePointsFormArray.at(index!);
       this.leafletMap?.addMarker(
         point,
         "middle",
+        index,
         'Punkt pośredni',
         undefined,
+        'form'
       );
     }
   }
 
-  handlePointAddedFromMap(event: {point: LocationPoint, type: 'start' | 'end' | 'middle'}) {
-    const {point, type} = event;
+  handlePointAddedFromMap(event: {point: LocationPoint, type: 'start' | 'end' | 'middle', dragged: boolean}) {
+    const {point, type, dragged} = event;
 
     if (type === 'start') {
       this.updateFormControlWithLocationName(this.fromFormControl, point);
@@ -152,10 +161,17 @@ export class PlannerPanelComponent implements OnInit {
       this.updateFormControlWithLocationName(this.toFormControl, point);
     }
     else if (type === 'middle') {
-      this.addMiddlePointForm();
-      const lastIndex = this.middlePointsFormArray.length - 1;
-      const lastControl = this.middlePointsFormArray.at(lastIndex);
-      this.updateFormControlWithLocationName(lastControl, point);
+      if (dragged && point.formControl) {
+        this.updateFormControlWithLocationName(point.formControl, point);
+      } else {
+        this.addMiddlePointForm();
+        const lastIndex = this.middlePointsFormArray.length - 1;
+        const newControl = this.middlePointsFormArray.at(lastIndex);
+        if (newControl) {
+          point.formControl = newControl;
+          this.updateFormControlWithLocationName(newControl, point);
+        }
+      }
     }
 
     this.cdr.detectChanges();
@@ -177,7 +193,6 @@ export class PlannerPanelComponent implements OnInit {
   findRoute() {
     this.apiGatewayService.getRoute(this.routePoints).subscribe(route => {
       if (route) {
-        console.log(route);
         this.leafletMap?.drawRoute(route);
       }
     });

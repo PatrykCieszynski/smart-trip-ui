@@ -36,7 +36,7 @@
             placeholder="Wybierz miasto pośrednie"
             [control]="ctrl"
             [cityOptions$]="filteredMiddlePointCities$[i]"
-            (optionSelected)="handleCitySelected($event, 'middle')"
+            (optionSelected)="handleCitySelected($event, 'middle', i)"
           ></city-autocomplete>
           <button mat-icon-button class="middle-point-remove-btn" (click)="removeMiddlePoint(i)">
             <mat-icon>delete</mat-icon>
