@@ -1,7 +1,7 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit, ViewChild} from '@angular/core';
 import {FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
 import { debounceTime, switchMap, startWith, map } from 'rxjs/operators';
-import {Observable, tap} from 'rxjs';
+import {firstValueFrom, Observable, tap} from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
@@ -48,7 +48,9 @@ export class PlannerPanelComponent implements OnInit {
 
   routePoints = new RoutePoints();
 
-  constructor(private apiGatewayService: ApiGatewayService, private fb: FormBuilder) {
+  constructor(private apiGatewayService: ApiGatewayService,
+              private fb: FormBuilder,
+              private cdr: ChangeDetectorRef) {
     this.middlePointsFormArray = this.fb.array<FormControl<string>>([]);
     this.form = this.fb.group({
       from: this.fromFormControl,
@@ -133,10 +135,42 @@ export class PlannerPanelComponent implements OnInit {
     } else if (type === 'middle') {
       this.leafletMap?.addMarker(
         point,
-        "index",
+        "middle",
         'Punkt pośredni',
         undefined,
       );
+    }
+  }
+
+  handlePointAddedFromMap(event: {point: LocationPoint, type: 'start' | 'end' | 'middle'}) {
+    const {point, type} = event;
+
+    if (type === 'start') {
+      this.updateFormControlWithLocationName(this.fromFormControl, point);
+    }
+    else if (type === 'end') {
+      this.updateFormControlWithLocationName(this.toFormControl, point);
+    }
+    else if (type === 'middle') {
+      this.addMiddlePointForm();
+      const lastIndex = this.middlePointsFormArray.length - 1;
+      const lastControl = this.middlePointsFormArray.at(lastIndex);
+      this.updateFormControlWithLocationName(lastControl, point);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  async updateFormControlWithLocationName(control: FormControl<string>, point: LocationPoint) {
+    try {
+      const locationName = await firstValueFrom(this.apiGatewayService.getLocationName(point.lat, point.lng));
+      control.setValue(locationName || `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}`);
+      point.pointName = locationName || `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}`;
+    } catch (error) {
+      console.warn('Reverse geocoding failed:', error);
+      const coordsString = `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}`;
+      control.setValue(coordsString);
+      point.pointName = coordsString;
     }
   }
 

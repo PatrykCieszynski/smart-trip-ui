@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {control, latLng, MapOptions, tileLayer} from 'leaflet';
 import {environment} from '../../environments/environment';
 import {LeafletModule} from '@bluehalo/ngx-leaflet';
@@ -13,6 +13,8 @@ import {LocationPoint, RoutePoints} from '../models/RoutePoints';
 })
 export class LeafletMapComponent {
   @Input() routePoints!: RoutePoints;
+
+  @Output() pointModifiedByMap = new EventEmitter<{point: LocationPoint, type: 'start' | 'end' | 'middle'}>();
 
   map: L.Map | undefined;
 
@@ -95,7 +97,7 @@ export class LeafletMapComponent {
           middleBtn.onclick = () => {
             this.addMarker(
               point,
-              "index",
+              "middle",
               'Punkt pośredni',
               undefined,
             );
@@ -118,13 +120,15 @@ export class LeafletMapComponent {
 
   addMarker(
       routePoint: LocationPoint,
-      markerRef: "start" | "end" | "index",
+      markerRef: "start" | "end" | "middle",
       popupText?: string,
       icon?: L.Icon,
   ) {
 
-    if(markerRef != "index") {
+    if(markerRef != "middle") {
       if (this.moveMarkerIfExist(markerRef, routePoint)) {
+        const type = markerRef as 'start' | 'end';
+        this.pointModifiedByMap.emit({point: routePoint, type});
         return;
       }
     }
@@ -143,6 +147,8 @@ export class LeafletMapComponent {
       if (routePoint) {
         routePoint.lat = lat;
         routePoint.lng = lng;
+        const type = markerRef === 'start' ? 'start' : markerRef === 'end' ? 'end' : 'middle';
+        this.pointModifiedByMap.emit({point: routePoint, type});
       }
     });
 
@@ -152,12 +158,15 @@ export class LeafletMapComponent {
 
     if (markerRef == "start") {
       this.routePoints?.setStart(routePoint!);
+      this.pointModifiedByMap.emit({point: routePoint, type: 'start'});
     }
     else if (markerRef == "end") {
       this.routePoints?.setEnd(routePoint!);
+      this.pointModifiedByMap.emit({point: routePoint, type: 'end'});
     }
-    else if (markerRef == "index") {
+    else if (markerRef == "middle") {
       this.routePoints?.addWaypoint(routePoint!);
+      this.pointModifiedByMap.emit({point: routePoint, type: 'middle'});
     }
   }
 

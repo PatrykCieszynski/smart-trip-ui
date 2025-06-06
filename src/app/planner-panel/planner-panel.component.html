@@ -1,6 +1,6 @@
 <leaflet-map #leafletMap
              [routePoints]="routePoints"
->
+             (pointModifiedByMap)="handlePointAddedFromMap($event)">
 </leaflet-map>
 
 <div class="planner-panel">

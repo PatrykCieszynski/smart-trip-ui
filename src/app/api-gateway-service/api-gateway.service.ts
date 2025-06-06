@@ -43,6 +43,21 @@ export class ApiGatewayService {
     );
   }
 
+  getLocationName(lat: number, lng: number): Observable<string> {
+    const url = `https://api.maptiler.com/geocoding/${lng},${lat}.json?key=${environment.maptilerApiKey}`;
+
+    return this.http.get<any>(url).pipe(
+      map(response => {
+        if (response.features && response.features.length > 0) {
+          return response.features[0].place_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        }
+        return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      }),
+      tap(locationName => console.log('Location name:', locationName))
+    );
+  }
+
+
   getRoute(routePoints: RoutePoints): Observable<any> {
     const url = 'https://api.openrouteservice.org/v2/directions/driving-car/geojson';
     const body = {
