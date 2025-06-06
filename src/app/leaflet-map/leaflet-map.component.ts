@@ -1,9 +1,9 @@
-import {Component, EventEmitter, Output} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {control, latLng, MapOptions, tileLayer} from 'leaflet';
 import {environment} from '../../environments/environment';
 import {LeafletModule} from '@bluehalo/ngx-leaflet';
 import * as L from 'leaflet';
-import {LocationPoint} from '../models/RoutePoints';
+import {LocationPoint, RoutePoints} from '../models/RoutePoints';
 
 @Component({
   selector: 'leaflet-map',
@@ -12,11 +12,9 @@ import {LocationPoint} from '../models/RoutePoints';
   styleUrl: './leaflet-map.component.scss'
 })
 export class LeafletMapComponent {
-  @Output() fromSelected = new EventEmitter<{ lat: number, lng: number }>();
-  @Output() toSelected = new EventEmitter<{ lat: number, lng: number }>();
+  @Input() routePoints!: RoutePoints;
 
   map: L.Map | undefined;
-  middleMarkers: L.Marker[] = [];
 
   options: MapOptions = {
     layers: [
@@ -56,10 +54,18 @@ export class LeafletMapComponent {
     map.on('click', (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
       const popupContent = `
-      <div>
-        <button id="set-from-btn" type="button">Ustaw punkt startowy</button><br/>
-        <button id="set-to-btn" type="button">Ustaw punkt końcowy</button>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button id="set-from-btn" type="button" style="padding: 8px 12px; border: none; background: #4CAF50; color: white; border-radius: 4px; cursor: pointer;">
+          Ustaw punkt startowy
+        </button>
+        <button id="set-middle-btn" type="button" style="padding: 8px 12px; border: none; background: #2196F3; color: white; border-radius: 4px; cursor: pointer;">
+          Dodaj punkt pośredni
+        </button>
+        <button id="set-to-btn" type="button" style="padding: 8px 12px; border: none; background: #f44336; color: white; border-radius: 4px; cursor: pointer;">
+          Ustaw punkt końcowy
+        </button>
       </div>
+
     `;
       L.popup()
         .setLatLng([lat, lng])
@@ -68,27 +74,42 @@ export class LeafletMapComponent {
 
       setTimeout(() => {
         const fromBtn = document.getElementById('set-from-btn');
+        const middleBtn = document.getElementById('set-middle-btn')
         const toBtn = document.getElementById('set-to-btn');
+        const point: LocationPoint = {
+          lat: lat,
+          lng: lng
+        };
         if (fromBtn) {
           fromBtn.onclick = () => {
-            this.addMarker(lat, lng, {
-              popupText: 'Start',
-              icon: this.startIcon,
-              markerRef: "start",
-            });
+            this.addMarker(
+              point,
+              'start',
+              'Start',
+              this.startIcon
+            );
             map.closePopup();
-            this.fromSelected.emit({ lat, lng });
+          };
+        }
+        if (middleBtn) {
+          middleBtn.onclick = () => {
+            this.addMarker(
+              point,
+              "index",
+              'Punkt pośredni',
+              undefined,
+            );
           };
         }
         if (toBtn) {
           toBtn.onclick = () => {
-            this.addMarker(lat, lng, {
-              popupText: 'Koniec',
-              icon: this.endIcon,
-              markerRef: "end",
-            });
+            this.addMarker(
+              point,
+              'end',
+              'Koniec',
+              this.endIcon,
+            );
             map.closePopup();
-            this.toSelected.emit({ lat, lng });
           };
         }
       }, 0);
@@ -96,47 +117,66 @@ export class LeafletMapComponent {
   }
 
   addMarker(
-    lat: number,
-    lng: number,
-    options: {
-      popupText?: string;
-      icon?: L.Icon;
-      routePoint?: LocationPoint;
-      markerRef?: "start" | "end" | "index";
-      middlePointIndex?: number;
-    } = {}
-  ): L.Marker {
+      routePoint: LocationPoint,
+      markerRef: "start" | "end" | "index",
+      popupText?: string,
+      icon?: L.Icon,
+  ) {
 
-    if (options.markerRef && (this as any)[options.markerRef]) {
-      this.map?.removeLayer((this as any)[options.markerRef]);
+    if(markerRef != "index") {
+      if (this.moveMarkerIfExist(markerRef, routePoint)) {
+        return;
+      }
     }
 
-    const marker = L.marker([lat, lng], {
+    const marker = L.marker([routePoint?.lat, routePoint?.lng], {
       draggable: true,
-      ...(options.icon ? { icon: options.icon } : {})
+      ...(icon ? { icon: icon } : {})
     }).addTo(this.map!);
 
-    if (options.popupText) {
-      marker.bindPopup(options.popupText).openPopup();
+    if (popupText) {
+      marker.bindPopup(popupText).openPopup();
     }
 
     marker.on('dragend', (event) => {
       const { lat, lng } = event.target.getLatLng();
-      console.log('Marker dragged to', lat, lng);
-      console.log(options);
-      if (options.routePoint) {
-        options.routePoint.lat = lat;
-        options.routePoint.lng = lng;
+      if (routePoint) {
+        routePoint.lat = lat;
+        routePoint.lng = lng;
       }
     });
 
-    if (options.markerRef == "start" || options.markerRef == "end") {
-      (this as any)[options.markerRef] = marker;
-    } else {
-      this.middleMarkers.push(marker);
+    if (routePoint) {
+      routePoint.marker = marker;
     }
 
-    return marker;
+    if (markerRef == "start") {
+      this.routePoints?.setStart(routePoint!);
+    }
+    else if (markerRef == "end") {
+      this.routePoints?.setEnd(routePoint!);
+    }
+    else if (markerRef == "index") {
+      this.routePoints?.addWaypoint(routePoint!);
+    }
+  }
+
+  moveMarkerIfExist(markerRef: string, routePoint: LocationPoint): boolean {
+    if(markerRef == "start" && this.routePoints?.getStart()) {
+      const start = this.routePoints.getStart()!;
+      start.marker!.setLatLng([routePoint.lat, routePoint.lng]);
+      start.lat = routePoint.lat;
+      start.lng = routePoint.lng;
+      return true;
+    }
+    else if(this.routePoints?.getEnd()) {
+      const end = this.routePoints.getEnd()!;
+      end.marker!.setLatLng([routePoint.lat, routePoint.lng]);
+      end.lat = routePoint.lat;
+      end.lng = routePoint.lng;
+      return true;
+    }
+    return false;
   }
 
   removeMarker(point: LocationPoint) {

@@ -115,40 +115,29 @@ export class PlannerPanelComponent implements OnInit {
     };
 
     if (type === 'start') {
-      this.routePoints.setStart(point);
-      point.marker = this.leafletMap?.addMarker(point.lat, point.lng, {
-        popupText: 'Start',
-        routePoint: point,
-        icon: this.leafletMap.startIcon,
-        markerRef: "start",
-      });
+      this.leafletMap?.addMarker(
+        point,
+        'start',
+        'Start',
+        this.leafletMap.startIcon
+      );
 
     } else if (type === 'end') {
-      this.routePoints.setEnd(point);
-      point.marker = this.leafletMap?.addMarker(point.lat, point.lng, {
-        popupText: 'Koniec',
-        routePoint: point,
-        icon: this.leafletMap.endIcon,
-        markerRef: "end",
-      });
+      this.leafletMap?.addMarker(
+        point,
+        'end',
+        'Koniec',
+        this.leafletMap.endIcon,
+      );
 
     } else if (type === 'middle') {
-      this.routePoints.addWaypoint(point);
-      point.marker = this.leafletMap?.addMarker(point.lat, point.lng, {
-        popupText: 'Punkt pośredni',
-        routePoint: point,
-        markerRef: "index",
-        middlePointIndex: this.routePoints.getWaypoints().length - 1,
-      });
+      this.leafletMap?.addMarker(
+        point,
+        "index",
+        'Punkt pośredni',
+        undefined,
+      );
     }
-  }
-
-  onLocationPicked(event: { lat: number, lng: number }, isFrom: boolean) {
-    // TODO Update the form control with the selected coordinates (or even some vague location name)
-    console.log(event);
-    console.log(isFrom);
-    const point = { lat: event.lat, lng: event.lng };
-    isFrom ? this.routePoints.setStart(point) : this.routePoints.setEnd(point);
   }
 
   findRoute() {

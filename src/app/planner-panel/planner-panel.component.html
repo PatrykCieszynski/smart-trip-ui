@@ -1,6 +1,5 @@
 <leaflet-map #leafletMap
-             (fromSelected)="onLocationPicked($event, true)"
-             (toSelected)="onLocationPicked($event, false)"
+             [routePoints]="routePoints"
 >
 </leaflet-map>
 
