@@ -79,13 +79,17 @@ export class PlannerPanelComponent implements OnInit {
   }
 
   removeMiddlePoint(index: number) {
-    const point = this.routePoints.getWaypoints()[index];
+    const controlForm = this.middlePointsFormArray.at(index);
+
+    const point = this.routePoints.getWaypoints().find(wp => wp.formControl === controlForm)
     if (point) {
       this.leafletMap?.removeMarker(point);
       this.routePoints.removeWaypoint(point);
     }
     this.middlePointsFormArray.removeAt(index);
+    this.middlePointsFormArray.updateValueAndValidity();
     this.filteredMiddlePointCities$.splice(index, 1);
+    this.cdr.detectChanges();
   }
 
   createCityFilter(control: FormControl<string>, citiesRef: MapTilerCity[]): Observable<string[]> {
