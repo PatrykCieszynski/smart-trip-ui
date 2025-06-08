@@ -111,7 +111,7 @@ export class PlannerPanelComponent implements OnInit {
     this.middlePointsFormArray.updateValueAndValidity();
   }
 
-  handleCitySelected(event: MatAutocompleteSelectedEvent, type: 'start' | 'end' | 'middle', index?: number) {
+  handleSelectedCity(event: MatAutocompleteSelectedEvent, type: 'start' | 'end' | 'middle', index?: number) {
     const city = this.citiesToSelect.find(c => c.place_name === event.option.value);
     if (!city) return;
     const point: LocationPoint = {
@@ -122,7 +122,7 @@ export class PlannerPanelComponent implements OnInit {
 
     if (type === 'start') {
       point.formControl = this.fromFormControl;
-      this.leafletMap?.addMarker(
+      this.leafletMap?.manageMarker(
         point,
         'start',
         undefined,
@@ -133,7 +133,7 @@ export class PlannerPanelComponent implements OnInit {
 
     } else if (type === 'end') {
       point.formControl = this.toFormControl;
-      this.leafletMap?.addMarker(
+      this.leafletMap?.manageMarker(
         point,
         'end',
         undefined,
@@ -144,7 +144,7 @@ export class PlannerPanelComponent implements OnInit {
 
     } else if (type === 'middle') {
       point.formControl = this.middlePointsFormArray.at(index!);
-      this.leafletMap?.addMarker(
+      this.leafletMap?.manageMarker(
         point,
         "middle",
         index,

@@ -78,53 +78,35 @@ export class LeafletMapComponent {
         const fromBtn = document.getElementById('set-from-btn');
         const middleBtn = document.getElementById('set-middle-btn')
         const toBtn = document.getElementById('set-to-btn');
+
         const point: LocationPoint = {
           lat: lat,
           lng: lng
         };
-        if (fromBtn) {
-          fromBtn.onclick = () => {
-            this.addMarker(
-              point,
-              'start',
-              undefined,
-              'Start',
-              this.startIcon,
-              'map'
-            );
-            map.closePopup();
-          };
-        }
-        if (middleBtn) {
-          middleBtn.onclick = () => {
-            this.addMarker(
-              point,
-              "middle",
-              undefined,
-              'Punkt pośredni',
-              undefined,
-              'map'
-            );
-          };
-        }
-        if (toBtn) {
-          toBtn.onclick = () => {
-            this.addMarker(
-              point,
-              'end',
-              undefined,
-              'Koniec',
-              this.endIcon,
-              'map'
-            );
-            map.closePopup();
-          };
-        }
+
+        this.handlePopupButtonClick(fromBtn, "start", point, map, this.startIcon);
+        this.handlePopupButtonClick(middleBtn ,"middle", point, map);
+        this.handlePopupButtonClick(toBtn ,"end", point, map, this.endIcon);
       }, 0);
     });
   }
 
-  addMarker(
+  handlePopupButtonClick(
+    button: HTMLElement | null,
+    type: 'start' | 'middle' | 'end',
+    point: LocationPoint,
+    map: L.Map,
+    icon?: L.Icon
+  ): void {
+    if (button) {
+      button.onclick = () => {
+        this.manageMarker(point, type, undefined, point.pointName, icon, 'map');
+        map.closePopup();
+      }
+    }
+  }
+
+  manageMarker(
       routePoint: LocationPoint,
       markerRef: "start" | "end" | "middle",
       index?: number,

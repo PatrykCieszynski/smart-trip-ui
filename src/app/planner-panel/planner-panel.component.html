@@ -14,7 +14,7 @@
       placeholder="Wybierz miasto początkowe"
       [control]="fromFormControl"
       [cityOptions$]="filteredFromCities$"
-      (optionSelected)="handleCitySelected($event, 'start')">
+      (optionSelected)="handleSelectedCity($event, 'start')">
     </city-autocomplete>
 
     <div formArrayName="middlePoints" *ngIf="middlePointsFormArray.length > 0">
@@ -36,7 +36,7 @@
             placeholder="Wybierz miasto pośrednie"
             [control]="ctrl"
             [cityOptions$]="filteredMiddlePointCities$[i]"
-            (optionSelected)="handleCitySelected($event, 'middle', i)"
+            (optionSelected)="handleSelectedCity($event, 'middle', i)"
           ></city-autocomplete>
           <button mat-icon-button class="middle-point-remove-btn" (click)="removeMiddlePoint(i)">
             <mat-icon>delete</mat-icon>
@@ -56,7 +56,7 @@
       placeholder="Wybierz miasto końcowe"
       [control]="toFormControl"
       [cityOptions$]="filteredToCities$"
-      (optionSelected)="handleCitySelected($event, 'end')">
+      (optionSelected)="handleSelectedCity($event, 'end')">
     </city-autocomplete>
 
   <div class="panel-actions">
