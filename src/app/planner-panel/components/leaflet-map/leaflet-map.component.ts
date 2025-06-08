@@ -1,9 +1,9 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {control, latLng, MapOptions, tileLayer} from 'leaflet';
-import {environment} from '../../environments/environment';
+import {environment} from '../../../../environments/environment';
 import {LeafletModule} from '@bluehalo/ngx-leaflet';
 import * as L from 'leaflet';
-import {LocationPoint, RoutePoints} from '../models/RoutePoints';
+import {LocationPoint, RoutePoints} from '../../../models/RoutePoints';
 
 @Component({
   selector: 'leaflet-map',

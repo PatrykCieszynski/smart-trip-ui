@@ -7,12 +7,14 @@ import { MatInputModule } from '@angular/material/input';
 import {MatAutocompleteModule, MatAutocompleteSelectedEvent} from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
-import {MapTilerCity, ApiGatewayService} from '../api-gateway-service/api-gateway.service';
-import { LeafletMapComponent } from '../leaflet-map/leaflet-map.component';
+import { MapService} from '../shared/service/map/map.service';
+import { LeafletMapComponent } from './components/leaflet-map/leaflet-map.component';
 import {LocationPoint, RoutePoints} from '../models/RoutePoints';
 import {MatIconModule} from '@angular/material/icon';
 import {CityAutocompleteComponent} from './components/city-autocomplete/city-autocomplete.component';
 import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
+import {AssistantPanelComponent} from './components/assistant-panel/assistant-panel.component';
+import {CityAutocompleteResponse} from '../models/CityAutocompleteResponse';
 
 @Component({
   selector: 'planner-panel',
@@ -28,7 +30,8 @@ import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-dr
     MatIconModule,
     LeafletMapComponent,
     CityAutocompleteComponent,
-    DragDropModule
+    DragDropModule,
+    AssistantPanelComponent
   ],
   templateUrl: './planner-panel.component.html',
   styleUrls: ['./planner-panel.component.scss']
@@ -44,11 +47,11 @@ export class PlannerPanelComponent implements OnInit {
   filteredFromCities$!: Observable<string[]>;
   filteredMiddlePointCities$: Observable<string[]>[] = [];
   filteredToCities$!: Observable<string[]>;
-  citiesToSelect: MapTilerCity[] = [];
+  citiesToSelect: CityAutocompleteResponse[] = [];
 
   routePoints = new RoutePoints();
 
-  constructor(private apiGatewayService: ApiGatewayService,
+  constructor(private apiGatewayService: MapService,
               private fb: FormBuilder,
               private cdr: ChangeDetectorRef) {
     this.middlePointsFormArray = this.fb.array<FormControl<string>>([]);
@@ -73,7 +76,7 @@ export class PlannerPanelComponent implements OnInit {
         debounceTime(300),
         switchMap(value => this.apiGatewayService.searchCities(value ?? '')),
         tap(cities => this.citiesToSelect = cities),
-        map(cities => cities.map(city => city.place_name))
+        map(cities => cities.map(city => city.name))
       )
     );
   }
@@ -92,7 +95,7 @@ export class PlannerPanelComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  createCityFilter(control: FormControl<string>, citiesRef: MapTilerCity[]): Observable<string[]> {
+  createCityFilter(control: FormControl<string>, citiesRef: CityAutocompleteResponse[]): Observable<string[]> {
     return control.valueChanges.pipe(
       startWith(''),
       debounceTime(300),
@@ -101,7 +104,7 @@ export class PlannerPanelComponent implements OnInit {
         citiesRef.splice(0, citiesRef.length, ...cities);
         this.citiesToSelect = cities; //
       }),
-      map(cities => cities.map(city => city.place_name))
+      map(cities => cities.map(city => city.name))
     );
   }
 
@@ -112,12 +115,12 @@ export class PlannerPanelComponent implements OnInit {
   }
 
   handleSelectedCity(event: MatAutocompleteSelectedEvent, type: 'start' | 'end' | 'middle', index?: number) {
-    const city = this.citiesToSelect.find(c => c.place_name === event.option.value);
+    const city = this.citiesToSelect.find(c => c.name === event.option.value);
     if (!city) return;
     const point: LocationPoint = {
-      lat: city.geometry.coordinates[1],
-      lng: city.geometry.coordinates[0],
-      pointName: city.place_name
+      lat: city.latitude,
+      lng: city.longitude,
+      pointName: city.name,
     };
 
     if (type === 'start') {

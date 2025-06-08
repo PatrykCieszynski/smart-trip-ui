@@ -75,7 +75,8 @@
               "buildTarget": "smart-trip-ui:build:production"
             },
             "development": {
-              "buildTarget": "smart-trip-ui:build:development"
+              "buildTarget": "smart-trip-ui:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

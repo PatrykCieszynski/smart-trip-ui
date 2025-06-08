@@ -2,46 +2,30 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {Observable, of, tap} from 'rxjs';
 import { map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
-import {RoutePoints} from '../models/RoutePoints';
-
-export interface MapTilerCity {
-  place_name: string;
-  geometry: {
-    type: string;
-    coordinates: [number, number];
-  };
-  center: [number, number];
-  bbox: [number, number, number, number];
-}
+import { environment } from '../../../../environments/environment';
+import {RoutePoints} from '../../../models/RoutePoints';
+import {CityAutocompleteResponse} from '../../../models/CityAutocompleteResponse';
 
 @Injectable({
   providedIn: 'root'
 })
-export class ApiGatewayService {
+export class MapService {
+  private readonly citySearchUrl = '/api/v1/map/cities/autocomplete';
+
   constructor(private http: HttpClient) {}
 
-  searchCities(query: string): Observable<MapTilerCity[]> {
+  searchCities(query: string): Observable<CityAutocompleteResponse[]> {
     const trimmed = query?.trim();
     if (!trimmed || trimmed.length < 1) {
       return of([]);
     }
-    const url = `https://api.maptiler.com/geocoding/${encodeURIComponent(trimmed)}.json?key=${environment.maptilerApiKey}&language=pl`;
-    return this.http.get<any>(url).pipe(
-      map(response =>
-        (response.features || []).map((r: any) => ({
-          place_name: r.place_name,
-          geometry: {
-            type: r.geometry.type,
-            coordinates: r.geometry.coordinates
-          },
-          center: r.center,
-          bbox: r.bbox
-        }))
-      ),
-      tap(citySuggestions => console.log('City suggestions:', citySuggestions))
+    console.log(`${this.citySearchUrl}?query=${encodeURIComponent(trimmed)}`);
+
+    return this.http.get<CityAutocompleteResponse[]>(`${this.citySearchUrl}?query=${encodeURIComponent(trimmed)}`).pipe(
+      tap(cities => console.log('City suggestions from backend:', cities))
     );
   }
+
 
   getLocationName(lat: number, lng: number): Observable<string> {
     const url = `https://api.maptiler.com/geocoding/${lng},${lat}.json?key=${environment.maptilerApiKey}`;
