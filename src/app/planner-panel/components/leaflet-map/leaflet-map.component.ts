@@ -17,6 +17,7 @@ export class LeafletMapComponent {
   @Output() pointModifiedByMap = new EventEmitter<{point: LocationPoint, type: 'start' | 'end' | 'middle', dragged: boolean}>();
 
   map: L.Map | undefined;
+  isPopoupOpen: boolean = false;
 
   options: MapOptions = {
     layers: [
@@ -54,6 +55,12 @@ export class LeafletMapComponent {
     control.zoom({ position: 'bottomright' }).addTo(map);
 
     map.on('click', (e: L.LeafletMouseEvent) => {
+      if (this.isPopoupOpen) {
+        map.closePopup();
+        this.isPopoupOpen = false;
+        return;
+      }
+
       const { lat, lng } = e.latlng;
       const popupContent = `
       <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -73,6 +80,7 @@ export class LeafletMapComponent {
         .setLatLng([lat, lng])
         .setContent(popupContent)
         .openOn(map);
+      this.isPopoupOpen = true
 
       setTimeout(() => {
         const fromBtn = document.getElementById('set-from-btn');
@@ -101,6 +109,7 @@ export class LeafletMapComponent {
     if (button) {
       button.onclick = () => {
         this.manageMarker(point, type, undefined, point.pointName, icon, 'map');
+        this.isPopoupOpen = false;
         map.closePopup();
       }
     }

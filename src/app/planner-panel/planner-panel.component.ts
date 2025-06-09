@@ -186,9 +186,9 @@ export class PlannerPanelComponent implements OnInit {
 
   async updateFormControlWithLocationName(control: FormControl<string>, point: LocationPoint) {
     try {
-      const locationName = await firstValueFrom(this.apiGatewayService.getLocationName(point.lat, point.lng));
-      control.setValue(locationName || `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}`);
-      point.pointName = locationName || `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}`;
+      const locationName: CityAutocompleteResponse = await firstValueFrom(this.apiGatewayService.getLocationName(point.lat, point.lng));
+      control.setValue(locationName.name);
+      point.pointName = locationName.name;
     } catch (error) {
       console.warn('Reverse geocoding failed:', error);
       const coordsString = `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}`;
