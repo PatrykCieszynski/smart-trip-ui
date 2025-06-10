@@ -59,9 +59,12 @@
       (optionSelected)="handleSelectedCity($event, 'end')">
     </city-autocomplete>
 
-  <div class="panel-actions">
-    <button mat-raised-button color="primary" (click)="findRoute()" >Znajdź trasę</button>
-  </div>
+    <div>
+      <route-summary [route]="routeResponse"></route-summary>
+    </div>
+    <div class="panel-actions">
+      <button mat-raised-button color="primary" (click)="findRoute()" >Znajdź trasę</button>
+    </div>
   </form>
   <div>
     <assistant-panel></assistant-panel>

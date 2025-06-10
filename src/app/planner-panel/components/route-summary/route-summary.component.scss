@@ -1,0 +1,60 @@
+.route-summary {
+  margin: 16px 0;
+
+  mat-card-header {
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+
+      mat-icon {
+        color: #2563eb;
+      }
+    }
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+  }
+
+  .summary-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 3px solid #2563eb;
+
+    mat-icon {
+      color: #64748b;
+      font-size: 20px;
+    }
+
+    .summary-details {
+      display: flex;
+      flex-direction: column;
+
+      .label {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
+      }
+
+      .value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+      }
+    }
+  }
+}

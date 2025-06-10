@@ -1,0 +1,44 @@
+<mat-card class="route-summary" *ngIf="route">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>route</mat-icon>
+      Podsumowanie trasy
+    </mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <mat-icon>straighten</mat-icon>
+        <div class="summary-details">
+          <span class="label">Dystans</span>
+          <span class="value">{{ formattedDistance }}</span>
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <mat-icon>schedule</mat-icon>
+        <div class="summary-details">
+          <span class="label">Czas przejazdu</span>
+          <span class="value">{{ formattedDuration }}</span>
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <mat-icon>location_on</mat-icon>
+        <div class="summary-details">
+          <span class="label">Liczba punktów</span>
+          <span class="value">{{ route.query.coordinates.length }}</span>
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <mat-icon>speed</mat-icon>
+        <div class="summary-details">
+          <span class="label">Średnia prędkość</span>
+          <span class="value">{{ averageSpeed }} km/h</span>
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -15,6 +15,8 @@ import {CityAutocompleteComponent} from './components/city-autocomplete/city-aut
 import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
 import {AssistantPanelComponent} from './components/assistant-panel/assistant-panel.component';
 import {CityAutocompleteResponse} from '../models/CityAutocompleteResponse';
+import {RouteResponse} from '../models/RouteResponse';
+import {RouteSummaryComponent} from './components/route-summary/route-summary.component';
 
 @Component({
   selector: 'planner-panel',
@@ -31,7 +33,8 @@ import {CityAutocompleteResponse} from '../models/CityAutocompleteResponse';
     LeafletMapComponent,
     CityAutocompleteComponent,
     DragDropModule,
-    AssistantPanelComponent
+    AssistantPanelComponent,
+    RouteSummaryComponent
   ],
   templateUrl: './planner-panel.component.html',
   styleUrls: ['./planner-panel.component.scss']
@@ -50,6 +53,8 @@ export class PlannerPanelComponent implements OnInit {
   citiesToSelect: CityAutocompleteResponse[] = [];
 
   routePoints = new RoutePoints();
+
+  routeResponse: RouteResponse | null = null;
 
   constructor(private apiGatewayService: MapService,
               private fb: FormBuilder,
@@ -200,6 +205,7 @@ export class PlannerPanelComponent implements OnInit {
   findRoute() {
     this.apiGatewayService.getRoute(this.routePoints).subscribe(route => {
       if (route) {
+        this.routeResponse = route;
         this.leafletMap?.drawRoute(route);
       }
     });
