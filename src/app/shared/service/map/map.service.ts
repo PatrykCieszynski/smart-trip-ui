@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {EMPTY, Observable, tap} from 'rxjs';
-import { environment } from '../../../../environments/environment';
 import {RoutePoints} from '../../../models/RoutePoints';
 import {CityAutocompleteResponse} from '../../../models/CityAutocompleteResponse';
+import {RouteResponse} from '../../../models/RouteResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +11,7 @@ import {CityAutocompleteResponse} from '../../../models/CityAutocompleteResponse
 export class MapService {
   private readonly citySearchUrl = '/api/v1/map/cities/autocomplete';
   private readonly nameByCoordsUrl = '/api/v1/map/cities/name-by-coords';
+  private readonly routeUrl = '/api/v1/map/route';
 
   constructor(private http: HttpClient) {}
 
@@ -31,18 +32,9 @@ export class MapService {
     );
   }
 
-  getRoute(routePoints: RoutePoints): Observable<any> {
-    const url = 'https://api.openrouteservice.org/v2/directions/driving-car/geojson';
-    const body = {
-      coordinates: routePoints.getAllCoordinates()
-    };
-    console.log(body);
-    const headers = {
-      'Authorization': environment.openRouteServiceApiKey,
-      'Content-Type': 'application/json'
-    };
-
-    return this.http.post<any>(url, body, { headers }).pipe(
+  getRoute(routePoints: RoutePoints): Observable<RouteResponse> {
+    const request = routePoints.createRouteRequest();
+    return this.http.post<RouteResponse>(`${this.routeUrl}`, request).pipe(
       tap(route => console.log('Route:', route)),
     );
   }

@@ -54,5 +54,11 @@ export class RoutePoints {
     return this.all.map(point => [point.lng, point.lat]);
   }
 
+  createRouteRequest(): { coordinates: [number, number][] } {
+    return {
+      coordinates: this.all.map(point => [point.lng, point.lat])
+    };
+  }
+
 
 }

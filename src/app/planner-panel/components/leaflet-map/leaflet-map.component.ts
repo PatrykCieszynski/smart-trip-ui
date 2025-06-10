@@ -1,9 +1,9 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {control, latLng, MapOptions, tileLayer} from 'leaflet';
-import {environment} from '../../../../environments/environment';
 import {LeafletModule} from '@bluehalo/ngx-leaflet';
 import * as L from 'leaflet';
 import {LocationPoint, RoutePoints} from '../../../models/RoutePoints';
+import {RouteResponse} from '../../../models/RouteResponse';
 
 @Component({
   selector: 'leaflet-map',
@@ -21,7 +21,7 @@ export class LeafletMapComponent {
 
   options: MapOptions = {
     layers: [
-      tileLayer(`https://api.maptiler.com/maps/basic-v2/{z}/{x}/{y}.png?key=${environment.maptilerApiKey}`, {
+      tileLayer(`/api/v1/map/{z}/{x}/{y}.png`, {
         attribution: '&copy; MapTiler & OpenStreetMap contributors',
         tileSize: 512,
         zoomOffset: -1
@@ -206,17 +206,19 @@ export class LeafletMapComponent {
     this.map?.removeLayer(point.marker!);
   }
 
-  drawRoute(route: any) {
-    if (!route || !route.features || !route.features[0]?.geometry?.coordinates) {
-      console.warn('Brak danych do narysowania trasy');
+  drawRoute(route: RouteResponse) {
+    if (!route || !route?.geometry?.length) {
+      console.warn('Brak danych geometrii trasy do narysowania');
       return;
     }
+
     if ((this as any).routeLayer) {
       this.map?.removeLayer((this as any).routeLayer);
     }
-    const coords = route.features[0].geometry.coordinates.map(
-      ([lng, lat]: [number, number]) => [lat, lng]
+    const coords = route.geometry.map((point) =>
+      [point.latitude, point.longitude] as [number, number]
     );
+
     (this as any).routeLayer = L.polyline(coords, { color: '#2563eb', weight: 5, opacity: 0.8
     }).addTo(this.map!);
     this.map?.fitBounds((this as any).routeLayer.getBounds());
