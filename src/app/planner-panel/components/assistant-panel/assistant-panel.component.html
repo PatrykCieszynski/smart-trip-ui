@@ -1,2 +1,26 @@
-<button (click)="ask()">Zapytaj AI</button>
-<p *ngIf="answer">{{ answer }}</p>
+<div class="assistant-chat">
+  <div class="assistant-header">
+    <span>AI Asystent</span>
+    <button mat-icon-button (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div class="assistant-messages" #messages>
+    <div *ngFor="let msg of messagesHistory" [ngClass]="msg.role">
+      <div class="message-content">{{msg.content}}</div>
+    </div>
+    <!-- SPINNER podczas ładowania odpowiedzi asystenta -->
+    <div *ngIf="loading" class="assistant">
+      <div class="message-content">
+        <mat-spinner diameter="24"></mat-spinner>
+      </div>
+    </div>
+  </div>
+  <form class="assistant-input" (ngSubmit)="sendMessage()">
+    <input matInput [(ngModel)]="currentMessage" name="message" placeholder="Napisz wiadomość..." autocomplete="off" required />
+    <button type="submit" mat-icon-button color="primary" [disabled]="loading || !currentMessage">
+      <mat-icon *ngIf="!loading">send</mat-icon>
+      <mat-spinner *ngIf="loading" diameter="22"></mat-spinner>
+    </button>
+  </form>
+</div>

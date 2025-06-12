@@ -13,10 +13,11 @@ import {LocationPoint, RoutePoints} from '../models/RoutePoints';
 import {MatIconModule} from '@angular/material/icon';
 import {CityAutocompleteComponent} from './components/city-autocomplete/city-autocomplete.component';
 import {CdkDragDrop, DragDropModule, moveItemInArray} from '@angular/cdk/drag-drop';
-import {AssistantPanelComponent} from './components/assistant-panel/assistant-panel.component';
 import {CityAutocompleteResponse} from '../models/CityAutocompleteResponse';
 import {RouteResponse} from '../models/RouteResponse';
 import {RouteSummaryComponent} from './components/route-summary/route-summary.component';
+import {Message} from '../models/Message';
+import {AssistantPanelComponent} from './components/assistant-panel/assistant-panel.component';
 
 @Component({
   selector: 'planner-panel',
@@ -33,14 +34,15 @@ import {RouteSummaryComponent} from './components/route-summary/route-summary.co
     LeafletMapComponent,
     CityAutocompleteComponent,
     DragDropModule,
-    AssistantPanelComponent,
-    RouteSummaryComponent
+    RouteSummaryComponent,
+    AssistantPanelComponent
   ],
   templateUrl: './planner-panel.component.html',
   styleUrls: ['./planner-panel.component.scss']
 })
 export class PlannerPanelComponent implements OnInit {
   @ViewChild('leafletMap') leafletMap?: LeafletMapComponent;
+  @ViewChild('assistantPanelRef') assistantPanel?: AssistantPanelComponent;
 
   form: FormGroup;
   fromFormControl = new FormControl<string>('', { nonNullable: true });
@@ -53,8 +55,12 @@ export class PlannerPanelComponent implements OnInit {
   citiesToSelect: CityAutocompleteResponse[] = [];
 
   routePoints = new RoutePoints();
+  AiPoints : LocationPoint[] = [];
 
   routeResponse: RouteResponse | null = null;
+
+  chatHistory: Message[] = [];
+  isAssistantOpen = false;
 
   constructor(private apiGatewayService: MapService,
               private fb: FormBuilder,
@@ -209,5 +215,9 @@ export class PlannerPanelComponent implements OnInit {
         this.leafletMap?.drawRoute(route);
       }
     });
+  }
+
+  findRouteWithAI() {
+     this.assistantPanel?.proposeAssistance(this.routePoints)?.pipe() ?? [];
   }
 }

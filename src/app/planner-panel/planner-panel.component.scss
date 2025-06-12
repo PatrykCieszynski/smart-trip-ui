@@ -130,3 +130,29 @@
   margin: 1rem 0 1rem 0;
 }
 
+
+.open-assistant-fab {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  z-index: 1002; // Powyżej wszystkiego
+  background: #1976d2; // Możesz dopasować kolory
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+.assistant-drawer {
+  position: fixed;
+  right: 32px;
+  bottom: 96px; // nad fab
+  width: 360px;
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 8px 8px 0 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.33);
+  z-index: 1001;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

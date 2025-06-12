@@ -9,9 +9,7 @@ import {RouteResponse} from '../../../models/RouteResponse';
   providedIn: 'root'
 })
 export class MapService {
-  private readonly citySearchUrl = '/api/v1/map/cities/autocomplete';
-  private readonly nameByCoordsUrl = '/api/v1/map/cities/name-by-coords';
-  private readonly routeUrl = '/api/v1/map/route';
+  private readonly mapURL = '/api/v1/map/';
 
   constructor(private http: HttpClient) {}
 
@@ -21,20 +19,20 @@ export class MapService {
       return EMPTY
     }
 
-    return this.http.get<CityAutocompleteResponse[]>(`${this.citySearchUrl}?query=${encodeURIComponent(trimmed)}`).pipe(
+    return this.http.get<CityAutocompleteResponse[]>(`${this.mapURL + 'cities/autocomplete'}?query=${encodeURIComponent(trimmed)}`).pipe(
       tap(cities => console.log('City suggestions from backend:', cities))
     );
   }
 
   getLocationName(lat: number, lng: number): Observable<CityAutocompleteResponse> {
-    return this.http.get<CityAutocompleteResponse>(`${this.nameByCoordsUrl}?lat=${lat}&lng=${lng}`).pipe(
+    return this.http.get<CityAutocompleteResponse>(`${this.mapURL + 'cities/name-by-coords'}?lat=${lat}&lng=${lng}`).pipe(
       tap(cities => console.log('Place suggestion from backend:', cities))
     );
   }
 
   getRoute(routePoints: RoutePoints): Observable<RouteResponse> {
     const request = routePoints.createRouteRequest();
-    return this.http.post<RouteResponse>(`${this.routeUrl}`, request).pipe(
+    return this.http.post<RouteResponse>(this.mapURL + 'route', request).pipe(
       tap(route => console.log('Route:', route)),
     );
   }

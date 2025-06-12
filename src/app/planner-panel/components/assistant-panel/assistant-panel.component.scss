@@ -1,0 +1,81 @@
+.assistant-chat {
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  width: 100%;
+  background: #fff;
+  border-radius: 8px 8px 0 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+.assistant-header {
+  background: #1976d2;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+}
+
+.assistant-messages {
+  flex: 1;
+  padding: 16px;
+  background: #f5f6fa;
+  overflow-y: auto;
+}
+
+.assistant-messages .user {
+  text-align: right;
+}
+
+.assistant-messages .assistant {
+  text-align: left;
+}
+
+.message-content {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 16px;
+  margin: 6px 0;
+  background: #eef1fc;
+  color: #333;
+  max-width: 80%;
+  word-break: break-word;
+}
+
+.user .message-content {
+  background: #1976d2;
+  color: #fff;
+}
+
+.assistant-input {
+  display: flex;
+  padding: 12px 8px;
+  background: #fafbfc;
+  border-top: 1px solid #e2e5ec;
+}
+
+.assistant-input input {
+  flex: 1;
+  margin-right: 8px;
+  border: none;
+  outline: none;
+  padding: 10px 12px;
+  font-size: 1em;
+  border-radius: 16px;
+  background: #eef1fc;
+}
+
+.assistant-input button {
+  align-self: center;
+}
+
+:host([hidden]) {
+  display: none !important;
+}
+
+.assistant-messages .assistant .message-content mat-spinner {
+  vertical-align: middle;
+  margin: 0 8px;
+}
