@@ -9,7 +9,6 @@
     <div *ngFor="let msg of messagesHistory" [ngClass]="msg.role">
       <div class="message-content">{{msg.content}}</div>
     </div>
-    <!-- SPINNER podczas ładowania odpowiedzi asystenta -->
     <div *ngIf="loading" class="assistant">
       <div class="message-content">
         <mat-spinner diameter="24"></mat-spinner>

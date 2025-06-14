@@ -7,9 +7,9 @@ import {MatInput} from '@angular/material/input';
 import {MatProgressSpinner} from '@angular/material/progress-spinner';
 import {AiAssistantService} from '../../../shared/service/ai-assistant/ai-assistant.service';
 import {Message} from '../../../models/Message';
-import {LocationPoint, RoutePoints} from '../../../models/RoutePoints';
+import {RoutePoints} from '../../../models/RoutePoints';
 import {TripPlannerService} from '../../../shared/service/trip-planner/trip-planner.service';
-import {Observable} from 'rxjs';
+import {Observable, tap} from 'rxjs';
 import {TripResponse} from '../../../models/TripResponse';
 
 @Component({
@@ -80,25 +80,26 @@ export class AssistantPanelComponent implements AfterViewChecked {
   }
 
   proposeAssistance(routePoints: RoutePoints): Observable<TripResponse> {
-    if(!this.alreadyProposedAssistance) {
-      this.open()
+    if (!this.alreadyProposedAssistance) {
+      this.open();
       this.messagesHistory.push({
         role: 'assistant',
         content: 'Hej, daj mi chwilę a wzbogacę twoją podróż o parę ciekawych miejsc.'
       });
-      this.loading = true
+      this.loading = true;
     }
 
-    this.tripPlannerService.getTrip(routePoints).subscribe(res => {
-      if(!this.alreadyProposedAssistance) {
-        this.loading = false;
-        this.messagesHistory.push({ role: 'assistant', content: res.ai.answer})
-        this.alreadyProposedAssistance = true;
-      }
-      return res;
-    })
-    return new Observable<any>();
+    return this.tripPlannerService.getTrip(routePoints).pipe(
+      tap(res => {
+        if (!this.alreadyProposedAssistance) {
+          this.loading = false;
+          this.messagesHistory.push({ role: 'assistant', content: res.ai.answer });
+          this.alreadyProposedAssistance = true;
+        }
+      })
+    );
   }
+
 
   private scrollToBottom() {
     try {

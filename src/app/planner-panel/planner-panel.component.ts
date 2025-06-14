@@ -18,6 +18,7 @@ import {RouteResponse} from '../models/RouteResponse';
 import {RouteSummaryComponent} from './components/route-summary/route-summary.component';
 import {Message} from '../models/Message';
 import {AssistantPanelComponent} from './components/assistant-panel/assistant-panel.component';
+import {TripResponse} from '../models/TripResponse';
 
 @Component({
   selector: 'planner-panel',
@@ -58,6 +59,7 @@ export class PlannerPanelComponent implements OnInit {
   AiPoints : LocationPoint[] = [];
 
   routeResponse: RouteResponse | null = null;
+  tripResponse: TripResponse | null = null;
 
   chatHistory: Message[] = [];
   isAssistantOpen = false;
@@ -217,7 +219,12 @@ export class PlannerPanelComponent implements OnInit {
     });
   }
 
-  findRouteWithAI() {
-     this.assistantPanel?.proposeAssistance(this.routePoints)?.pipe() ?? [];
+  findTrip() {
+     this.assistantPanel?.proposeAssistance(this.routePoints).subscribe(trip => {
+       if (trip) {
+         this.tripResponse = trip;
+         this.leafletMap?.drawRoute(trip.route);
+       }
+     });
   }
 }

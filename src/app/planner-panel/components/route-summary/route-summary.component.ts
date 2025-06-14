@@ -18,7 +18,7 @@ import {NgIf} from '@angular/common';
   styleUrl: './route-summary.component.scss'
 })
 export class RouteSummaryComponent {
-  @Input() route: RouteResponse | null = null;
+  @Input() route: RouteResponse | null | undefined = null;
 
   get formattedDistance(): string {
     if (!this.route) return '';
