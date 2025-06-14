@@ -209,8 +209,22 @@ export class PlannerPanelComponent implements OnInit {
       point.pointName = coordsString;
     }
   }
+  clearData() {
+    this.leafletMap?.clearRoutes();
+    this.routeResponse = null;
+    this.tripResponse = null;
+    this.AiPoints = [];
+  }
+
+  clearStartEnd() {
+    this.leafletMap?.clearAllMarkers();
+    this.routePoints = new RoutePoints();
+    this.form.reset();
+    this.clearData();
+  }
 
   findRoute() {
+    this.clearData();
     this.apiGatewayService.getRoute(this.routePoints).subscribe(route => {
       if (route) {
         this.routeResponse = route;
@@ -220,11 +234,35 @@ export class PlannerPanelComponent implements OnInit {
   }
 
   findTrip() {
-     this.assistantPanel?.proposeAssistance(this.routePoints).subscribe(trip => {
-       if (trip) {
-         this.tripResponse = trip;
-         this.leafletMap?.drawRoute(trip.route);
-       }
-     });
+    this.clearData();
+    this.assistantPanel?.proposeAssistance(this.routePoints).subscribe(trip => {
+      if (trip) {
+        this.tripResponse = trip;
+
+        this.AiPoints = trip.ai.locations.slice(1, -1)
+          .map(s => ({
+          lat: s.latitude,
+          lng: s.longitude,
+          pointName: s.name
+        }));
+
+        this.leafletMap?.drawTrip(trip.route);
+        this.leafletMap?.showAiSuggestionPoints(this.AiPoints);
+      }
+    });
   }
+
+  fullAiRoute(tripResponse: TripResponse) {
+    this.tripResponse = tripResponse;
+
+    this.AiPoints = tripResponse.ai.locations.map(s => ({
+      lat: s.latitude,
+      lng: s.longitude,
+      pointName: s.name
+    })) || [];
+
+    this.leafletMap?.drawTrip(tripResponse.route);
+    this.leafletMap?.showAiSuggestionPoints(this.AiPoints);
+  }
+
 }

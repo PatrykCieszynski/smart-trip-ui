@@ -33,6 +33,8 @@ export class AssistantPanelComponent implements AfterViewChecked {
   @ViewChild('messages') messagesContainer!: ElementRef<HTMLDivElement>;
   @Input() history: Message[] = [];
   @Output() historyUpdate = new EventEmitter<Message[]>();
+  @Output() aiResponseGenerated = new EventEmitter<TripResponse>();
+  @Output() messageSend = new EventEmitter<void>();
 
   messagesHistory: Message[] = [];
   currentMessage: string = '';
@@ -51,16 +53,19 @@ export class AssistantPanelComponent implements AfterViewChecked {
 
   sendMessage() {
     if (!this.currentMessage.trim()) return;
+    this.messageSend.emit();
     const question = this.currentMessage;
     this.messagesHistory.push({ role: 'user', content: question });
     this.historyUpdate.emit(this.messagesHistory);
     this.currentMessage = '';
     this.loading = true;
 
-    this.aiAssistantService.askQuestion(question)
+    // emit requestSend event
+    this.tripPlannerService.getTripViaAssistant(question)
       .subscribe({
         next: (res: any) => {
-          const answer = res.answer || 'Brak odpowiedzi od AI.';
+          this.aiResponseGenerated.emit(res);
+          const answer = res.ai.answer || 'Brak odpowiedzi od AI.';
           this.messagesHistory.push({ role: 'assistant', content: answer });
           this.loading = false;
         },
@@ -91,15 +96,12 @@ export class AssistantPanelComponent implements AfterViewChecked {
 
     return this.tripPlannerService.getTrip(routePoints).pipe(
       tap(res => {
-        if (!this.alreadyProposedAssistance) {
-          this.loading = false;
-          this.messagesHistory.push({ role: 'assistant', content: res.ai.answer });
-          this.alreadyProposedAssistance = true;
-        }
+        this.loading = false;
+        this.messagesHistory.push({ role: 'assistant', content: res.ai.answer });
+        this.alreadyProposedAssistance = true;
       })
     );
   }
-
 
   private scrollToBottom() {
     try {

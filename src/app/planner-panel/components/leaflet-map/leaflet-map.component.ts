@@ -18,6 +18,9 @@ export class LeafletMapComponent {
 
   map: L.Map | undefined;
   isPopoupOpen: boolean = false;
+  mapRoute?: L.Polyline;
+  mapAiTrip?: L.Polyline;
+  aiSuggestionMarkers: L.Marker[] = [];
 
   options: MapOptions = {
     layers: [
@@ -49,6 +52,16 @@ export class LeafletMapComponent {
     popupAnchor: [1, -34],
     shadowSize: [41, 41]
   });
+
+  aiSuggestionIcon = new L.Icon({
+    iconUrl: 'media/marker-icon-yellow.png', // Dodaj tutaj odpowiednią ścieżkę/kolor
+    shadowUrl: 'media/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
 
   onMapReady(map: L.Map) {
     this.map = map;
@@ -212,15 +225,72 @@ export class LeafletMapComponent {
       return;
     }
 
-    if ((this as any).routeLayer) {
-      this.map?.removeLayer((this as any).routeLayer);
+    if (this.mapRoute) {
+      this.map?.removeLayer(this.mapRoute);
     }
     const coords = route.geometry.map((point) =>
       [point.latitude, point.longitude] as [number, number]
     );
 
-    (this as any).routeLayer = L.polyline(coords, { color: '#2563eb', weight: 5, opacity: 0.8
+    this.mapRoute = L.polyline(coords, { color: '#2563eb', weight: 5, opacity: 0.8
     }).addTo(this.map!);
-    this.map?.fitBounds((this as any).routeLayer.getBounds());
+    this.map?.fitBounds(this.mapRoute.getBounds());
   }
+
+  drawTrip(route: RouteResponse) {
+    if (!route || !route?.geometry?.length) {
+      console.warn('Brak danych geometrii trasy do narysowania');
+      return;
+    }
+
+    if (this.mapAiTrip) {
+      this.map?.removeLayer(this.mapAiTrip);
+    }
+    const coords = route.geometry.map((point) =>
+      [point.latitude, point.longitude] as [number, number]
+    );
+
+    this.mapAiTrip = L.polyline(coords, { color: '#FFB566', weight: 5, opacity: 0.8
+    }).addTo(this.map!);
+    this.map?.fitBounds(this.mapAiTrip.getBounds());
+  }
+
+  clearRoutes() {
+    if (this.mapRoute) {
+      this.map?.removeLayer(this.mapRoute);
+    }
+    if (this.mapAiTrip) {
+      this.map?.removeLayer(this.mapAiTrip);
+    }
+    if (this.aiSuggestionMarkers.length) {
+      this.aiSuggestionMarkers.forEach(marker => this.map?.removeLayer(marker));
+    }
+  }
+
+  clearAllMarkers() {
+    this.map?.eachLayer((layer: L.Layer) => {
+      // Usuwaj tylko markery (nie usuń np. podkładów)
+      if (layer instanceof L.Marker) {
+        this.map?.removeLayer(layer);
+      }
+    });
+
+  }
+
+  showAiSuggestionPoints(points: LocationPoint[]) {
+    // Usuń stare markery, jeśli są
+    this.aiSuggestionMarkers.forEach(marker => this.map?.removeLayer(marker));
+    this.aiSuggestionMarkers = [];
+
+    points.forEach(point => {
+      const marker = L.marker([point.lat, point.lng], {
+        icon: this.aiSuggestionIcon,
+        draggable: false // lub true jeśli potrzebne
+      });
+      marker.bindPopup(point.pointName || "Sugestia AI");
+      marker.addTo(this.map!);
+      this.aiSuggestionMarkers.push(marker);
+    });
+  }
+
 }

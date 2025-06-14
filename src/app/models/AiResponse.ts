@@ -17,7 +17,7 @@ export interface AiResponse {
     estimatedDuration: string | null;
     priority: number | null;
   }[];
-  mentionedLocations: {
+  locations: {
     name: string;
     address: string | null;
     latitude: number;

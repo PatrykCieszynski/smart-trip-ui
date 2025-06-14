@@ -9,6 +9,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   font-family: 'Inter', sans-serif;
   z-index: 1000;
+  max-height: calc(100vh - 6rem); // żeby panel nie wychodził poza okno
+  overflow-y: auto;               // scroll tylko wewnątrz panelu
 
   .panel-header {
     margin-bottom: 1rem;
@@ -132,7 +134,7 @@
 
 .open-assistant-fab {
   position: fixed;
-  right: 32px;
+  right: 64px;
   bottom: 32px;
   z-index: 1002; // Powyżej wszystkiego
   background: #1976d2; // Możesz dopasować kolory
@@ -162,7 +164,7 @@
   border-radius: 14px;
   background: linear-gradient(90deg, #e3f2fd 0%, #fefefe 100%);
   box-shadow: 0 2px 14px rgba(25,118,210,0.08);
-  padding: 12px 14px 8px 14px;
+  padding: 8px; // dla lepszego wyglądu paska scrolla
 }
 .ai-route-label {
   display: flex;

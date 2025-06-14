@@ -18,4 +18,10 @@ export class TripPlannerService {
       tap(response => console.log('Trip response: ', response)),
     );
   }
+
+  getTripViaAssistant(prompt: String): Observable<TripResponse> {
+    return this.http.post<TripResponse>(this.tripPlannerURL + 'route-with-ai-via-assistant', prompt).pipe(
+      tap(response => console.log('Assistant Trip response: ', response)),
+    )
+  }
 }

@@ -68,6 +68,21 @@
         Propozycja trasy z AI
       </div>
       <route-summary [route]="tripResponse?.route"></route-summary>
+      <div *ngIf="tripResponse?.ai?.suggestions?.length">
+        <h4>Proponowane atrakcje na trasie:</h4>
+        <ul class="ai-attractions-list">
+          <li *ngFor="let suggestion of tripResponse?.ai?.suggestions">
+            <strong>{{ suggestion.title }}</strong><br>
+            <span *ngIf="suggestion.location?.name">
+          Lokalizacja: {{ suggestion.location.name }}
+              <span *ngIf="suggestion.location.address">, {{ suggestion.location.address }}</span>
+        </span><br>
+            <span *ngIf="suggestion.estimatedDuration">Szacowany czas: {{ suggestion.estimatedDuration }}</span>
+            <span *ngIf="suggestion.estimatedCost">&nbsp; Koszt: {{ suggestion.estimatedCost }}</span>
+            <div style="margin-top: 2px; color: #666; font-size:0.95em;">{{ suggestion.description }}</div>
+          </li>
+        </ul>
+      </div>
     </div>
 
     <div class="panel-actions">
@@ -88,6 +103,8 @@
   [hidden]="!isAssistantOpen"
   [history]="chatHistory"
   (historyUpdate)="chatHistory = $event"
+  (messageSend)="clearStartEnd()"
+  (aiResponseGenerated)="fullAiRoute($event)"
   (closed)="isAssistantOpen = false"
   (opened)="isAssistantOpen = true">
 </assistant-panel>
